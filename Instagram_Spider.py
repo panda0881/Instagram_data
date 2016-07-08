@@ -11,9 +11,9 @@ class instagram_spider:
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
         self.future_to_item = {}
         self.s = requests.session()
-        self.user_list = []
-        self.tag_list = []
-        self.media_list = []
+        self.user_list = list()
+        self.tag_list = list()
+        self.media_list = list()
 
     def login(self, username, password):
         headers = {
@@ -48,7 +48,6 @@ class instagram_spider:
         media = json.loads(resp.text)
         for item in media['items']:
             self.media_list.append(item['code'])
-
         if 'more_available' in media and media['more_available'] is True:
             max_id = media['items'][-1]['id']
             self.download_user_media(name=name, max_id=max_id)
@@ -103,3 +102,36 @@ class instagram_spider:
 
         file_time = int(item['created_time'])
         os.utime(file_path, (file_time, file_time))
+
+    def get_tag_from_media(self, media_code):
+        resp = self.s.get('http://instagram.com/p/' + media_code)
+        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
+        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
+        data = json.loads(tmp2)['entry_data']['PostPage'][0]['media']
+        sentences = list()
+        sentences.append(data['caption'])
+        for comment in data['comments']['nodes']:
+            sentences.append(comment['text'])
+        for sentence in sentences:
+            number = sentence.count('#')
+            position = sentence.find('#')
+            if number > 0:
+                while position >= 0:
+                    str = sentence[position + 1:]
+                    pos1 = str.find(' ')
+                    pos2 = str.find('\n')
+                    pos3 = str.find('#')
+                    l = [pos1, pos2, pos3, 0]
+                    l.sort()
+                    if l.index(0) < 3:
+                        pos = l[l.index(0)+1]
+                        tag = str[:pos]
+                        self.tag_list.append(tag)
+                        sentence = str[pos:]
+                        position = sentence.find('#')
+                    else:
+                        tag = str
+                        self.tag_list.append(tag)
+                        sentence = ''
+                        position = sentence.find('#')
+        return data
