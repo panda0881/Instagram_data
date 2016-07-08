@@ -7,7 +7,7 @@ sample_media_code = 'BGUNUTcMhvo'
 spider.login(username, password)
 
 
-# spider.get_user_media_data('megthelegend')
+
 spider.get_tag_from_media(sample_media_code)
 
 first_name = input('Please give me a tag name to start with: ')

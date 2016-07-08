@@ -134,4 +134,5 @@ class instagram_spider:
                         self.tag_list.append(tag)
                         sentence = ''
                         position = sentence.find('#')
-        return data
+        self.tag_list = list(set(self.tag_list))
+        return self.tag_list
