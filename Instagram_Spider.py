@@ -3,6 +3,17 @@ import json
 import requests
 import re
 import os
+from collections import Counter
+
+
+def list_formatting(input_list):
+    list1 = Counter(input_list).most_common()
+    output_list = list()
+    for pair in list1:
+        # if pair[1] <= 1:
+        #     break
+        output_list.append(pair[0])
+    return output_list
 
 
 def strange_character_filter(input_string):
@@ -147,8 +158,8 @@ class instagram_spider:
                         self.tag_list.append(tag)
                         sentence = ''
                         position = sentence.find('#')
-        self.tag_list = list(set(self.tag_list))
-        tag_list = list(set(self.tag_list))
+        self.tag_list = list_formatting(self.tag_list)
+        tag_list = list_formatting(tag_list)
         return tag_list
 
     def get_media_from_tag(self, tag_name):
@@ -160,8 +171,8 @@ class instagram_spider:
         # for media in data['media']['nodes']:
         #     media_list.append(media['code'])
         #     self.media_list.append(media['code'])
-        self.media_list = list(set(self.media_list))
-        media_list = list(set(media_list))
+        self.media_list = list_formatting(self.media_list)
+        media_list = list_formatting(media_list)
         return media_list
 
     def get_user_from_media(self, media_code):
@@ -174,8 +185,8 @@ class instagram_spider:
         # for like in data['likes']['nodes']:
         #     user_list.append(like['user']['username'])
         #     self.user_list.append(like['user']['username'])
-        self.user_list = list(set(self.user_list))
-        user_list = list(set(user_list))
+        self.user_list = list_formatting(self.user_list)
+        user_list = list_formatting(user_list)
         return user_list
 
     def get_user_from_tag(self, tag_name):
@@ -185,7 +196,7 @@ class instagram_spider:
             tmp = self.get_user_from_media(media)
             for user in tmp:
                 user_list.append(user)
-        user_list = list(set(user_list))
+        user_list = list_formatting(user_list)
         return user_list
 
     def get_tag_from_user(self, name):
@@ -198,7 +209,7 @@ class instagram_spider:
             tmp = self.get_tag_from_media(media)
             for tag in tmp:
                 tag_list.append(tag)
-        tag_list = list(set(tag_list))
+        tag_list = list_formatting(tag_list)
         return tag_list
 
 
