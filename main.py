@@ -1,22 +1,10 @@
-from Instagram_Spider import instagram_spider
+from Instagram_Spider import *
 import time
 import csv
 
 
-def strange_character_filter(input_string):
-    output_string = ''
-    for character in input_string:
-        if character != '\n':
-            try:
-                character.encode("gbk")
-                output_string += character
-            except UnicodeEncodeError:
-                print('find a strange character')
-    return output_string
-
-
 def record_info(dict, spider, original_tag):
-    field_names = ['original tag', 'username', 'fullname', 'biography', 'isprivate', 'follows', 'followed by', 'url', 'tag']
+    field_names = ['original tag', 'username', 'fullname', 'biography', 'private_account', 'followed by', 'tags']
     my_file = open('Instagram_tag_data.csv', 'w', newline='')
     my_writer = csv.writer(my_file)
     my_writer.writerow(field_names)
@@ -27,9 +15,11 @@ def record_info(dict, spider, original_tag):
         for tag in tags:
             tag_string = tag_string + '#' + tag + ' '
         tag_string = strange_character_filter(tag_string)
-        url = 'http://instagram.com/' + user
-        row = [original_tag, strange_character_filter(user), strange_character_filter(data['full_name']),strange_character_filter(data['biography']), data['is_private'], data['follows']['count'], data['followed_by']['count'], url, tag_string]
-        my_writer.writerow(row)
+        row = [original_tag, strange_character_filter(user), strange_character_filter(data['full_name']), strange_character_filter(data['biography']), data['is_private'], data['followed_by']['count'], tag_string]
+        try:
+            my_writer.writerow(row)
+        except UnicodeEncodeError:
+            print('There is something wrong with the data about' + user)
     my_file.close()
 
 start_time = time.time()
@@ -50,6 +40,5 @@ for user in users:
     print('getting data for user: ' + user)
     result[user] = spider.get_tag_from_user(user)
     print('used time: ' + str(time.time() - start_time))
-
 record_info(dict=result, spider=spider, original_tag=first_name)
 print('end')

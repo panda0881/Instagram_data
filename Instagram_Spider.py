@@ -5,6 +5,20 @@ import re
 import os
 
 
+def strange_character_filter(input_string):
+    if input_string is None:
+        return ' '
+    output_string = ''
+    for character in input_string:
+        if character != '\n':
+            try:
+                character.encode("gbk")
+                output_string += character
+            except UnicodeEncodeError:
+                output_string = output_string
+    return output_string
+
+
 class instagram_spider:
     def __init__(self):
         self.numPosts = 0
