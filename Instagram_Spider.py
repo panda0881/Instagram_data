@@ -105,8 +105,10 @@ class instagram_spider:
         sentences = list()
         if 'caption' in data.keys():
             sentences.append(data['caption'])
+        # sentences.append(data['comments']['nodes'][0]['text'])
         for comment in data['comments']['nodes']:
-            sentences.append(comment['text'])
+            if data['owner']['username'] == comment['user']['username']:
+                sentences.append(comment['text'])
         for sentence in sentences:
             number = sentence.count('#')
             position = sentence.find('#')
@@ -141,9 +143,9 @@ class instagram_spider:
         for media in data['top_posts']['nodes']:
             media_list.append(media['code'])
             self.media_list.append(media['code'])
-        for media in data['media']['nodes']:
-            media_list.append(media['code'])
-            self.media_list.append(media['code'])
+        # for media in data['media']['nodes']:
+        #     media_list.append(media['code'])
+        #     self.media_list.append(media['code'])
         self.media_list = list(set(self.media_list))
         media_list = list(set(media_list))
         return media_list
@@ -152,12 +154,12 @@ class instagram_spider:
         data = self.get_media_data(media_code)
         user_list = list()
         user_list.append(data['owner']['username'])
-        for comment in data['comments']['nodes']:
-            user_list.append(comment['user']['username'])
-            self.user_list.append(comment['user']['username'])
-        for like in data['likes']['nodes']:
-            user_list.append(like['user']['username'])
-            self.user_list.append(like['user']['username'])
+        # for comment in data['comments']['nodes']:
+        #     user_list.append(comment['user']['username'])
+        #     self.user_list.append(comment['user']['username'])
+        # for like in data['likes']['nodes']:
+        #     user_list.append(like['user']['username'])
+        #     self.user_list.append(like['user']['username'])
         self.user_list = list(set(self.user_list))
         user_list = list(set(user_list))
         return user_list
