@@ -41,17 +41,12 @@ class instagram_spider:
         data = json.loads(tmp2)['entry_data']['ProfilePage'][0]['user']
         return data
 
-    def get_user_media_data(self, name, max_id=None):
+    def get_user_media_data(self, name):
         url = 'http://instagram.com/' + name + '/media'
-        if max_id is not None:
-            url += '?&max_id=' + max_id
         resp = requests.get(url)
         media = json.loads(resp.text)
         for item in media['items']:
             self.tmp_media_list.append(item['code'])
-        if 'more_available' in media and media['more_available'] is True:
-            max_id = media['items'][-1]['id']
-            self.get_user_media_data(name=name, max_id=max_id)
 
     def get_user_followers(self, name):
         resp = self.s.get('http://instagram.com/' + name + '/followers')
@@ -146,9 +141,9 @@ class instagram_spider:
         for media in data['top_posts']['nodes']:
             media_list.append(media['code'])
             self.media_list.append(media['code'])
-        # for media in data['media']['nodes']:
-        #     media_list.append(media['code'])
-        #     self.media_list.append(media['code'])
+        for media in data['media']['nodes']:
+            media_list.append(media['code'])
+            self.media_list.append(media['code'])
         self.media_list = list(set(self.media_list))
         media_list = list(set(media_list))
         return media_list
@@ -157,12 +152,12 @@ class instagram_spider:
         data = self.get_media_data(media_code)
         user_list = list()
         user_list.append(data['owner']['username'])
-        # for comment in data['comments']['nodes']:
-        #     user_list.append(comment['user']['username'])
-        #     self.user_list.append(comment['user']['username'])
-        # for like in data['likes']['nodes']:
-        #     user_list.append(like['user']['username'])
-        #     self.user_list.append(like['user']['username'])
+        for comment in data['comments']['nodes']:
+            user_list.append(comment['user']['username'])
+            self.user_list.append(comment['user']['username'])
+        for like in data['likes']['nodes']:
+            user_list.append(like['user']['username'])
+            self.user_list.append(like['user']['username'])
         self.user_list = list(set(self.user_list))
         user_list = list(set(user_list))
         return user_list
@@ -182,8 +177,6 @@ class instagram_spider:
         self.get_user_media_data(name)
         tag_list = list()
         print('total number of medias from this user: ' + str(len(self.tmp_media_list)))
-        if len(self.tmp_media_list) > 20:
-            self.tmp_media_list = self.tmp_media_list[:19]
         for media in self.tmp_media_list:
             print('getting tag from media: ' + media)
             tmp = self.get_tag_from_media(media)
