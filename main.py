@@ -1,20 +1,24 @@
 from Instagram_Spider import instagram_spider
+import time
 
+start_time = time.time()
 spider = instagram_spider()
 username = 'hongming0611'
 password = 'zhm940330'
 sample_media_code = 'BGUNUTcMhvo'
+sample_user_name = 'yy_god'
 spider.login(username, password)
-
-
-
-spider.get_tag_from_media(sample_media_code)
+result = dict()
 
 first_name = input('Please give me a tag name to start with: ')
-tag_data = spider.get_tag_data(first_name)
-for media in tag_data['top_posts']['nodes']:
-    media_data = spider.get_media_data(media['code'])
-    spider.user_list.append(media_data['owner']['username'])
+users = spider.get_user_from_tag(first_name)
+print('finish getting user data...')
+print('total user number: ' + str(len(users)))
+print('used time: ' + str(time.time()-start_time))
+for user in users:
+    print('getting data for user: ' + user)
+    result[user] = spider.get_tag_from_user(user)
+    print('used time: ' + str(time.time() - start_time))
 
-print(spider.user_list)
+print(result)
 print('end')

@@ -14,6 +14,7 @@ class instagram_spider:
         self.user_list = list()
         self.tag_list = list()
         self.media_list = list()
+        self.tmp_media_list = list()
 
     def login(self, username, password):
         headers = {
@@ -47,10 +48,10 @@ class instagram_spider:
         resp = requests.get(url)
         media = json.loads(resp.text)
         for item in media['items']:
-            self.media_list.append(item['code'])
+            self.tmp_media_list.append(item['code'])
         if 'more_available' in media and media['more_available'] is True:
             max_id = media['items'][-1]['id']
-            self.download_user_media(name=name, max_id=max_id)
+            self.get_user_media_data(name=name, max_id=max_id)
 
     def get_user_followers(self, name):
         resp = self.s.get('http://instagram.com/' + name + '/followers')
@@ -104,12 +105,11 @@ class instagram_spider:
         os.utime(file_path, (file_time, file_time))
 
     def get_tag_from_media(self, media_code):
-        resp = self.s.get('http://instagram.com/p/' + media_code)
-        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
-        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
-        data = json.loads(tmp2)['entry_data']['PostPage'][0]['media']
+        data = self.get_media_data(media_code)
+        tag_list = list()
         sentences = list()
-        sentences.append(data['caption'])
+        if 'caption' in data.keys():
+            sentences.append(data['caption'])
         for comment in data['comments']['nodes']:
             sentences.append(comment['text'])
         for sentence in sentences:
@@ -126,13 +126,73 @@ class instagram_spider:
                     if l.index(0) < 3:
                         pos = l[l.index(0)+1]
                         tag = str[:pos]
+                        tag_list.append(tag)
                         self.tag_list.append(tag)
                         sentence = str[pos:]
                         position = sentence.find('#')
                     else:
                         tag = str
+                        tag_list.append(tag)
                         self.tag_list.append(tag)
                         sentence = ''
                         position = sentence.find('#')
         self.tag_list = list(set(self.tag_list))
-        return self.tag_list
+        tag_list = list(set(self.tag_list))
+        return tag_list
+
+    def get_media_from_tag(self, tag_name):
+        media_list = list()
+        data = self.get_tag_data(tag_name)
+        for media in data['top_posts']['nodes']:
+            media_list.append(media['code'])
+            self.media_list.append(media['code'])
+        # for media in data['media']['nodes']:
+        #     media_list.append(media['code'])
+        #     self.media_list.append(media['code'])
+        self.media_list = list(set(self.media_list))
+        media_list = list(set(media_list))
+        return media_list
+
+    def get_user_from_media(self, media_code):
+        data = self.get_media_data(media_code)
+        user_list = list()
+        user_list.append(data['owner']['username'])
+        # for comment in data['comments']['nodes']:
+        #     user_list.append(comment['user']['username'])
+        #     self.user_list.append(comment['user']['username'])
+        # for like in data['likes']['nodes']:
+        #     user_list.append(like['user']['username'])
+        #     self.user_list.append(like['user']['username'])
+        self.user_list = list(set(self.user_list))
+        user_list = list(set(user_list))
+        return user_list
+
+    def get_user_from_tag(self, tag_name):
+        medias = self.get_media_from_tag(tag_name)
+        user_list = list()
+        for media in medias:
+            tmp = self.get_user_from_media(media)
+            for user in tmp:
+                user_list.append(user)
+        user_list = list(set(user_list))
+        return user_list
+
+    def get_tag_from_user(self, name):
+        self.tmp_media_list = list()
+        self.get_user_media_data(name)
+        tag_list = list()
+        print('total number of medias from this user: ' + str(len(self.tmp_media_list)))
+        if len(self.tmp_media_list) > 20:
+            self.tmp_media_list = self.tmp_media_list[:19]
+        for media in self.tmp_media_list:
+            print('getting tag from media: ' + media)
+            tmp = self.get_tag_from_media(media)
+            for tag in tmp:
+                tag_list.append(tag)
+        tag_list = list(set(tag_list))
+        return tag_list
+
+
+
+
+
