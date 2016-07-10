@@ -30,7 +30,7 @@ def strange_character_filter(input_string):
     return output_string
 
 
-class instagram_spider:
+class InstagramSpider:
     def __init__(self):
         self.numPosts = 0
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
@@ -48,10 +48,12 @@ class instagram_spider:
             'accept-language': 'zh-CN,zh;q=0.8,zh-TW;q=0.6,en;q=0.4',
             'content-length': '23',
             'content-type': 'application/x-www-form-urlencoded',
-            'cookie': 'mid=V39AvQAEAAEIwy8g1C7EViIlodxd; s_network=; ig_pr=1; ig_vw=650; csrftoken=3r8AwU3xWRhQMFIMz5b6ICn6Pfa4A5ZV',
+            'cookie': 'mid=V39AvQAEAAEIwy8g1C7EViIlodxd; s_network=; ig_pr=1; ig_vw=650; '
+                      'csrftoken=3r8AwU3xWRhQMFIMz5b6ICn6Pfa4A5ZV',
             'origin': 'https://www.instagram.com',
             'referer': 'https://www.instagram.com/accounts/login/',
-            'user-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+            'user-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/51.0.2704.103 Safari/537.36',
             'x-csrftoken': '3r8AwU3xWRhQMFIMz5b6ICn6Pfa4A5ZV',
             'x-instagram-ajax': 1,
             'x-requested-with': 'XMLHttpRequest'
@@ -130,7 +132,6 @@ class instagram_spider:
         sentences = list()
         if 'caption' in data.keys():
             sentences.append(data['caption'])
-        # sentences.append(data['comments']['nodes'][0]['text'])
         for comment in data['comments']['nodes']:
             if data['owner']['username'] == comment['user']['username']:
                 sentences.append(comment['text'])
@@ -139,21 +140,21 @@ class instagram_spider:
             position = sentence.find('#')
             if number > 0:
                 while position >= 0:
-                    str = sentence[position + 1:]
-                    pos1 = str.find(' ')
-                    pos2 = str.find('\n')
-                    pos3 = str.find('#')
+                    string = sentence[position + 1:]
+                    pos1 = string.find(' ')
+                    pos2 = string.find('\n')
+                    pos3 = string.find('#')
                     l = [pos1, pos2, pos3, 0]
                     l.sort()
                     if l.index(0) < 3:
                         pos = l[l.index(0)+1]
-                        tag = str[:pos]
+                        tag = string[:pos]
                         tag_list.append(tag)
                         self.tag_list.append(tag)
-                        sentence = str[pos:]
+                        sentence = string[pos:]
                         position = sentence.find('#')
                     else:
-                        tag = str
+                        tag = string
                         tag_list.append(tag)
                         self.tag_list.append(tag)
                         sentence = ''
@@ -168,9 +169,9 @@ class instagram_spider:
         for media in data['top_posts']['nodes']:
             media_list.append(media['code'])
             self.media_list.append(media['code'])
-        # for media in data['media']['nodes']:
-        #     media_list.append(media['code'])
-        #     self.media_list.append(media['code'])
+        for media in data['media']['nodes']:
+            media_list.append(media['code'])
+            self.media_list.append(media['code'])
         self.media_list = list_formatting(self.media_list)
         media_list = list_formatting(media_list)
         return media_list
@@ -211,8 +212,3 @@ class instagram_spider:
                 tag_list.append(tag)
         tag_list = list_formatting(tag_list)
         return tag_list
-
-
-
-
-
