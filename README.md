@@ -7,7 +7,7 @@ The first reason for me to start this project is that I want to collect some use
 After I finish collecting data about tags, I moved to build data-crawler for Instagram user as well as Instagram media, thus you can combine those as you want and develop your own Instagram-crawler.
 
 ----------
-Reasons:
+Advantages:
 ---------
 1.	Python 3.5: I am using python 3.5 to finish this task. As scrapy is still not fully supported for python 3.5 for now. If you want to do some crawling with python 3.5, you should try this out.
 2.	Non-API: Instead of using official API to get data, I choose to use the old-school way. Thus you don’t need to register as developer to use this library
