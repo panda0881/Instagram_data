@@ -1,11 +1,10 @@
 Instagram_data 
 ============================================================
-(A non-API Instagram data collection machine)
-============================================================
+(A non-API Instagram data collector)
+---------
 
 The first reason for me to start this project is that I want to collect some useful data about an Instagram tag and there is no current solution solving this problem, so I decide to develop my own library to crawl some data from the Instagram.
 After I finish collecting data about tags, I moved to build data-crawler for Instagram user as well as Instagram media, thus you can combine those as you want and develop your own Instagram-crawler.
-
 
 ----------
 Reasons:
