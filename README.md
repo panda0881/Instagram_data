@@ -38,7 +38,7 @@ To-do list:
 
 Remarks:
 ---------
-1. Great thanks to rarcega, whose project(https://github.com/rarcega/instagram-scraper) gave me the first hint of collecting data from Instagram without API.
+1. Great thanks to rarcega, whose project (https://github.com/rarcega/instagram-scraper) gave me the first hint of collecting data from Instagram without API.
 2. As the full media list of a tag as well as the following and follower list are loaded with javascript, I have to find another way to solve this problem.
 3. Your help is more than welcomed
 
