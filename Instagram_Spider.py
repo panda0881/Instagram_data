@@ -30,6 +30,31 @@ def strange_character_filter(input_string):
     return output_string
 
 
+def store_tag_data(name, tag_data):
+    file_name = name + '_tag_data.json'
+    file = open(file_name, 'w')
+    json.dump(tag_data, file)
+    file.close()
+
+
+def load_tag_data(name):
+    file_name = name + '_tag_data.json'
+    file = open(file_name, 'r')
+    tag_data = json.load(file)
+    file.close()
+    return tag_data
+
+
+def get_data(name):
+    file_name = name + '_tag_data.json'
+    if os.path.isfile(file_name):
+        tag_data = load_tag_data(name)
+    else:
+        tag_data = spider.get_all_tag_from_user(sample_public_user_name)
+        store_tag_data(sample_public_user_name, tag_data)
+    return tag_data
+
+
 class InstagramSpider:
     def __init__(self):
         self.numPosts = 0
