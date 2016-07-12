@@ -45,14 +45,34 @@ def load_tag_data(name):
     return tag_data
 
 
-def get_data(name):
+def get_data(spider, name):
     file_name = name + '_tag_data.json'
     if os.path.isfile(file_name):
         tag_data = load_tag_data(name)
     else:
-        tag_data = spider.get_all_tag_from_user(sample_public_user_name)
-        store_tag_data(sample_public_user_name, tag_data)
+        tag_data = spider.get_all_tag_from_user(name)
+        store_tag_data(name, tag_data)
     return tag_data
+
+
+def successful_rate(successful_list, fail_list):
+    successful_number = 0
+    fail_number = 0
+    for tag_pair in successful_list:
+        successful_number += tag_pair[1]
+    for tag_pair in fail_list:
+        fail_number += tag_pair[1]
+    rate = successful_number/(successful_number+fail_number)
+    print("successful rate is：%.2f%%" % (rate * 100))
+
+
+def clean_up_string(str):
+    characters = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+    newstring = ''
+    for char in str:
+        if char in characters:
+            newstring += char
+    return newstring.lower()
 
 
 class InstagramSpider:
