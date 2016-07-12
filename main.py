@@ -42,8 +42,11 @@ def main():
     print('finish getting user data...')
     print('total user number: ' + str(len(users)))
     print('used time: ' + str(time.time() - start_time))
+    total_user_number = len(users)
+    current_user_number = 0
     for user in users:
-        print('getting data for user: ' + user)
+        current_user_number += 1
+        print('getting data for user: ' + user + '(' + str(current_user_number) + '/' + str(total_user_number) + ')')
         result[user] = spider.get_tag_from_user(user)
         print('used time: ' + str(time.time() - start_time))
     record_info(tag_dict=result, spider=spider, file_name=file_name)

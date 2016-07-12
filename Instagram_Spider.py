@@ -36,10 +36,7 @@ class InstagramSpider:
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
         self.future_to_item = {}
         self.s = requests.session()
-        self.user_list = list()
-        self.tag_list = list()
-        self.media_list = list()
-        self.tmp_media_list = list()
+        self.full_media_list = list()
 
     def login(self, username, password):
         headers = {
@@ -72,8 +69,24 @@ class InstagramSpider:
         url = 'http://instagram.com/' + name + '/media'
         resp = requests.get(url)
         media = json.loads(resp.text)
+        media_list = list()
         for item in media['items']:
-            self.tmp_media_list.append(item['code'])
+            media_list.append(item['code'])
+        return media_list
+
+    def get_user_full_media_data(self, name, max_id=None):
+        url = 'http://instagram.com/' + name + '/media'
+        if max_id is not None:
+            url += '?&max_id=' + max_id
+        resp = requests.get(url)
+        media = json.loads(resp.text)
+        self.numPosts += len(media['items'])
+        print('collecting data from ' + str(self.numPosts) + 'medias')
+        for item in media['items']:
+            self.full_media_list.append(item['code'])
+        if 'more_available' in media and media['more_available'] is True:
+            max_id = media['items'][-1]['id']
+            self.get_user_full_media_data(name=name, max_id=max_id)
 
     def get_user_followers(self, name):
         resp = self.s.get('http://instagram.com/' + name + '/followers')
@@ -150,16 +163,13 @@ class InstagramSpider:
                         pos = l[l.index(0)+1]
                         tag = string[:pos]
                         tag_list.append(tag)
-                        self.tag_list.append(tag)
                         sentence = string[pos:]
                         position = sentence.find('#')
                     else:
                         tag = string
                         tag_list.append(tag)
-                        self.tag_list.append(tag)
                         sentence = ''
                         position = sentence.find('#')
-        self.tag_list = list(set(self.tag_list))
         tag_list = list(set(tag_list))
         return tag_list
 
@@ -168,11 +178,8 @@ class InstagramSpider:
         data = self.get_tag_data(tag_name)
         for media in data['top_posts']['nodes']:
             media_list.append(media['code'])
-            self.media_list.append(media['code'])
         for media in data['media']['nodes']:
             media_list.append(media['code'])
-            self.media_list.append(media['code'])
-        self.media_list = list(set(self.media_list))
         media_list = list(set(media_list))
         return media_list
 
@@ -182,11 +189,8 @@ class InstagramSpider:
         user_list.append(data['owner']['username'])
         for comment in data['comments']['nodes']:
             user_list.append(comment['user']['username'])
-            self.user_list.append(comment['user']['username'])
         # for like in data['likes']['nodes']:
         #     user_list.append(like['user']['username'])
-        #     self.user_list.append(like['user']['username'])
-        self.user_list = list(set(self.user_list))
         user_list = list(set(user_list))
         return user_list
 
@@ -206,14 +210,32 @@ class InstagramSpider:
         return final_user_list
 
     def get_tag_from_user(self, name):
-        self.tmp_media_list = list()
-        self.get_user_media_data(name)
+        media_list = self.get_user_media_data(name)
         tag_list = list()
-        print('total number of medias from this user: ' + str(len(self.tmp_media_list)))
-        for media in self.tmp_media_list:
+        print('total number of medias from this user: ' + str(len(media_list)))
+        for media in media_list:
             print('getting tag from media: ' + media)
             tmp = self.get_tag_from_media(media)
             for tag in tmp:
                 tag_list.append(tag)
         tag_list = list_formatting(tag_list)
+        return tag_list
+
+    def get_all_tag_from_user(self, name):
+        self.full_media_list = list()
+        self.numPosts = 0
+        self.get_user_full_media_data(name)
+        tag_list = list()
+        print('getting data for user: ' + name)
+        print('total number of medias from this user: ' + str(len(self.full_media_list)))
+        total_media_number = len(self.full_media_list)
+        current_media_number = 0
+        for media in self.full_media_list:
+            current_media_number += 1
+            print('getting tag from media: ' + media + '(' + str(current_media_number) +
+                  '/' + str(total_media_number) + ')')
+            tmp = self.get_tag_from_media(media)
+            for tag in tmp:
+                tag_list.append(tag)
+        tag_list = Counter(tag_list).most_common()
         return tag_list
