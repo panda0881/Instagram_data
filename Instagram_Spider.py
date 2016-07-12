@@ -201,9 +201,9 @@ class InstagramSpider:
         final_user_list = list()
         for user in user_list:
             data = self.get_user_data(user)
-            if data['is_private'] is False and data['followed_by']['count'] > 500:
+            if data['is_private'] == False and data['followed_by']['count'] > 500:
                 final_user_list.append(user)
-        return user_list
+        return final_user_list
 
     def get_tag_from_user(self, name):
         self.tmp_media_list = list()

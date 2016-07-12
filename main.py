@@ -13,13 +13,13 @@ def record_info(tag_dict, spider, file_name):
         for tag in tags:
             tag_string = tag_string + '#' + tag[0] + ':' + str(tag[1]) + ' '
         tag_string = strange_character_filter(tag_string)
-        row = [strange_character_filter(user), data['is_private'],
+        row = [strange_character_filter(user), strange_character_filter(data['country_block']),
                strange_character_filter(data['full_name']), strange_character_filter(data['biography']),
                data['followed_by']['count'], tag_string]
         try:
             my_writer.writerow(row)
         except UnicodeEncodeError:
-            print('There is something wrong with the data about' + user)
+            print('There is something wrong with the data about ' + user)
     my_file.close()
 
 
@@ -29,7 +29,7 @@ def main():
     username = 'hongming0611'
     password = 'zhm940330'
     spider.login(username, password)
-    field_names = ['username', 'is private', 'fullname', 'biography', 'followed by', 'tags']
+    field_names = ['username', 'location', 'fullname', 'biography', 'followed by', 'tags']
     result = dict()
 
     first_name = input('Please give me a tag name to start with: ')
