@@ -6,6 +6,19 @@ import os
 from collections import Counter
 
 
+def store_dictionary(dict_name, dict_data):
+    file = open(dict_name, 'w')
+    json.dump(dict_data, file)
+    file.close()
+
+
+def load_dictionary(dict_name):
+    file = open(dict_name, 'r')
+    dict_data = json.load(file)
+    file.close()
+    return dict_data
+
+
 def list_formatting(input_list):
     list1 = Counter(input_list).most_common()
     output_list = list()

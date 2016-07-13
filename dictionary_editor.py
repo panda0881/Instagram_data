@@ -2,19 +2,6 @@ import json
 from Instagram_Spider import *
 
 
-def store_dictionary(dict_name, dict_data):
-    file = open(dict_name, 'w')
-    json.dump(dict_data, file)
-    file.close()
-
-
-def load_dictionary(dict_name):
-    file = open(dict_name, 'r')
-    dict_data = json.load(file)
-    file.close()
-    return dict_data
-
-
 def delete_word(dictionary):
     category = input('category:')
     if category not in dictionary.keys():
