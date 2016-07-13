@@ -2,6 +2,7 @@ from Instagram_Spider import *
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import words
 from textblob import *
+from nltk.corpus import wordnet
 
 wordlist = set(words.words())
 wordnet_lemmatizer = WordNetLemmatizer()
