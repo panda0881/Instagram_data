@@ -76,7 +76,8 @@ def successful_rate(successful_list, fail_list):
     for tag_pair in fail_list:
         fail_number += tag_pair[1]
     rate = successful_number/(successful_number+fail_number)
-    print("successful rate is：%.2f%%" % (rate * 100))
+    return rate
+
 
 
 def clean_up_string(str):

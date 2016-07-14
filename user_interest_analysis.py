@@ -46,61 +46,87 @@ def tag2word(tag_list):
             else:
                 pos -= 1
         if len(tag) > 1:
-            tag = Word(tag).correct()
-            word = wordnet_lemmatizer.lemmatize(tag)
-            if word in wordlist:
-                result_list.append((word, tag_pair[1]))
-            else:
-                unsolved_list.append((tag, tag_pair[1]))
+            unsolved_list.append((tag, tag_pair[1]))
     print('done...')
     return result_list, unsolved_list
 
 
 def analyze_words(words, dictionary):
-    result_dictionary = dict()
+    similarity_dictionary = dict()
+    local_similarity_dictionary = dict()
+    distribution_dictionary = dict()
     total_number = 0
     valid_word_count = 0
     for category in dictionary:
-        result_dictionary[category] = 0
+        similarity_dictionary[category] = 0
+        local_similarity_dictionary[category] = 0
+        distribution_dictionary[category] = list()
+    distribution_dictionary['unknown'] = list()
     one_tenth = int(len(words)/10)
     current_number = 0
     progress = 0
     for word_pair in words:
+        find_category = False
         current_number += 1
         if current_number > one_tenth:
             progress += 1
             current_number = 0
             print('finish ' + str(progress) + '0%')
+        for category in dictionary:
+            if word_pair[0] in dictionary[category]:
+                valid_word_count += 1
+                similarity_dictionary[category] += 10 * word_pair[1]
+                distribution_dictionary[category].append(word_pair)
+                find_category = True
+                break
+        if find_category:
+            continue
         try:
             word = wn.synsets(word_pair[0])[0]
             total_number += word_pair[1]
             valid_word_count += 1
-        except Exception:
+        except:
             continue
         for category in dictionary:
             word_list = dictionary[category]
+            total_similarity = 0
             total_words = 0
-            if word_pair[0] in word_list:
-                result_dictionary[category] += 1*word_pair[1]
-            else:
-                total_similarity = 0
-                for test_word in word_list:
-                    try:
-                        test = wn.synsets(test_word)[0]
-                    except Exception:
-                        continue
-                    try:
-                        total_similarity += word.res_similarity(test, brown_ic)
-                        total_words += 1
-                    except Exception:
-                        continue
-                if total_words > 0:
-                    result_dictionary[category] += word_pair[1]*total_similarity/total_words
-    for category in result_dictionary:
-        result_dictionary[category] /= total_number
+            for test_word in word_list:
+                try:
+                    test = wn.synsets(test_word)[0]
+                except:
+                    continue
+                try:
+                    total_similarity += word.res_similarity(test, brown_ic)
+                    total_words += 1
+                except:
+                    continue
+            if total_words > 0:
+                similarity_dictionary[category] += word_pair[1] * total_similarity / total_words
+                local_similarity_dictionary[category] = total_similarity / total_words
+        final_category = 'others'
+        for category in local_similarity_dictionary:
+            if local_similarity_dictionary[category] > local_similarity_dictionary[final_category]:
+                final_category = category
+        if local_similarity_dictionary[final_category] > 5:
+            find_category = True
+            distribution_dictionary[final_category].append(word_pair)
+        if not find_category:
+            distribution_dictionary['unknown'].append(word_pair)
+    for category in similarity_dictionary:
+        similarity_dictionary[category] /= total_number
     rate = valid_word_count/len(words)
+    percentage_dictionary = dict()
+    total_words = 0
+    for category in distribution_dictionary:
+        percentage_dictionary[category] = 0
+        for word_pair2 in distribution_dictionary[category]:
+            percentage_dictionary[category] += word_pair2[1]
+            total_words += word_pair2[1]
+    for category in percentage_dictionary:
+        percentage_dictionary[category] /= total_words
     print('done...')
-    return result_dictionary, rate
+    return similarity_dictionary, rate, distribution_dictionary, percentage_dictionary
 
 
 sample_media_code = 'BGUNUTcMhvo'
@@ -117,11 +143,15 @@ data = get_data(spider, sample_public_user_name)
 print('data got...')
 print('analyzing tags from user: ' + sample_public_user_name)
 words, unsolved_data = tag2word(data)
-successful_rate(words, unsolved_data)
-
+rate1 = successful_rate(words, unsolved_data)
+print("successful rate of extracting from hashtag is：%.2f%%" % (rate1 * 100))
 print('analyzing words from tags from user: ' + sample_public_user_name)
-result, rate = analyze_words(words, dictionary)
+result, rate, distribute_result, percentage_result = analyze_words(words, dictionary)
+
+print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
+print('similarity result: ')
 print(result)
-print("successful rate is：%.2f%%" % (rate * 100))
+recognize_rate = 1-percentage_result['unknown']
+print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
 
 print('end')
