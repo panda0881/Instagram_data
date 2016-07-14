@@ -7,7 +7,7 @@ def delete_word(dictionary):
     if category not in dictionary.keys():
         print('there is no such category for now...')
         return dictionary
-    word = input('word:')
+    word = input('word:').lower()
     if word not in dictionary[category]:
         print('There is no word ' + word + 'in category:' + category)
         return dictionary
@@ -20,9 +20,9 @@ def add_word(dictionary):
     if category not in dictionary.keys():
         print('there is no such category for now...')
         return dictionary
-    word = input('word:')
+    word = input('word:').lower()
     if word in dictionary[category]:
-        print('We have already had' + word + 'in category:' + category)
+        print('We have already had ' + word + 'in category:' + category)
         return dictionary
     dictionary[category].append(word)
     print()
