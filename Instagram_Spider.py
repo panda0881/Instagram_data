@@ -134,7 +134,7 @@ class InstagramSpider:
 
     def get_user_full_media_data(self, name, max_id=None):
         url = 'http://instagram.com/' + name + '/media'
-        if max_id is not None:
+        if max_id:
             url += '?&max_id=' + max_id
         resp = requests.get(url)
         media = json.loads(resp.text)
@@ -169,7 +169,7 @@ class InstagramSpider:
 
     def download_user_media(self, name, max_id=None):
         url = 'http://instagram.com/' + name + '/media'
-        if max_id is not None:
+        if max_id:
             url += '?&max_id=' + max_id
         resp = requests.get(url)
         media = json.loads(resp.text)

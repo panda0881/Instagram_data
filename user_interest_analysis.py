@@ -26,7 +26,6 @@ def tag2word(tag_list):
         while pos > 1:
             word = wordnet_lemmatizer.lemmatize(tag[0:pos])
             if word in wordlist:
-                print(word)
                 result_list.append((word, tag_pair[1]))
                 tag = tag[pos:]
                 pos = len(tag)
@@ -35,7 +34,6 @@ def tag2word(tag_list):
         if len(tag) > 1:
             tag = Word(tag).correct()
             word = wordnet_lemmatizer.lemmatize(tag)
-            print(tag)
             if word in wordlist:
                 result_list.append((word, tag_pair[1]))
             else:
@@ -46,17 +44,20 @@ def tag2word(tag_list):
 def analyze_words(words, dictionary):
     result_dictionary = dict()
     total_number = 0
+    valid_word_count = 0
     for category in dictionary:
         result_dictionary[category] = 0
     for word_pair in words:
         print('analyzing: ' + word_pair[0])
-        total_number += word_pair[1]
         try:
             word = wn.synsets(word_pair[0])[0]
+            total_number += word_pair[1]
+            valid_word_count += 1
         except Exception:
             continue
         for category in dictionary:
             word_list = dictionary[category]
+            total_words = 0
             if word_pair[0] in word_list:
                 result_dictionary[category] += 1*word_pair[1]
             else:
@@ -68,12 +69,15 @@ def analyze_words(words, dictionary):
                         continue
                     try:
                         total_similarity += word.res_similarity(test, brown_ic)
+                        total_words += 1
                     except Exception:
                         continue
-                result_dictionary[category] += word_pair[1]*total_similarity/len(word_list)
+                if total_words > 0:
+                    result_dictionary[category] += word_pair[1]*total_similarity/total_words
     for category in result_dictionary:
         result_dictionary[category] /= total_number
-    return result_dictionary
+    rate = valid_word_count/len(words)
+    return result_dictionary, rate
 
 
 sample_media_code = 'BGUNUTcMhvo'
@@ -91,7 +95,8 @@ print('data got...')
 words, unsolved_data = tag2word(data)
 successful_rate(words, unsolved_data)
 dictionary = load_dictionary('Instagram_tag_dictionary.json')
-result = analyze_words(words, dictionary)
+result, rate = analyze_words(words, dictionary)
 print(result)
+print("successful rate is：%.2f%%" % (rate * 100))
 
 print('end')
