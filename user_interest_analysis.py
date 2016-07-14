@@ -15,11 +15,15 @@ semcor_ic = wordnet_ic.ic('ic-semcor.dat')
 def tag2word(tag_list):
     result_list = list()
     unsolved_list = list()
-    total_number = len(tag_list)
+    one_tenth = int(len(tag_list)/10)
     current_number = 0
+    progress = 0
     for tag_pair in tag_list:
         current_number += 1
-        print('analyzing: ' + tag_pair[0] + '(' + str(current_number) + '/' + str(total_number) + ')')
+        if current_number > one_tenth:
+            progress += 1
+            current_number = 0
+            print('finish ' + str(progress) + '0%')
         tag = tag_pair[0]
         tag = clean_up_string(tag)
         pos = len(tag)
@@ -38,6 +42,7 @@ def tag2word(tag_list):
                 result_list.append((word, tag_pair[1]))
             else:
                 unsolved_list.append((tag, tag_pair[1]))
+    print('done...')
     return result_list, unsolved_list
 
 
@@ -47,8 +52,15 @@ def analyze_words(words, dictionary):
     valid_word_count = 0
     for category in dictionary:
         result_dictionary[category] = 0
+    one_tenth = int(len(words)/10)
+    current_number = 0
+    progress = 0
     for word_pair in words:
-        print('analyzing: ' + word_pair[0])
+        current_number += 1
+        if current_number > one_tenth:
+            progress += 1
+            current_number = 0
+            print('finish ' + str(progress) + '0%')
         try:
             word = wn.synsets(word_pair[0])[0]
             total_number += word_pair[1]
@@ -77,6 +89,7 @@ def analyze_words(words, dictionary):
     for category in result_dictionary:
         result_dictionary[category] /= total_number
     rate = valid_word_count/len(words)
+    print('done...')
     return result_dictionary, rate
 
 
@@ -92,9 +105,11 @@ spider = InstagramSpider()
 # spider.login(username, password)
 data = get_data(spider, sample_public_user_name)
 print('data got...')
+print('analyzing tags from user: ' + sample_public_user_name)
 words, unsolved_data = tag2word(data)
 successful_rate(words, unsolved_data)
 dictionary = load_dictionary('Instagram_tag_dictionary.json')
+print('analyzing words from tags from user: ' + sample_public_user_name)
 result, rate = analyze_words(words, dictionary)
 print(result)
 print("successful rate is：%.2f%%" % (rate * 100))
