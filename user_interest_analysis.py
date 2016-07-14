@@ -12,6 +12,16 @@ brown_ic = wordnet_ic.ic('ic-brown.dat')
 semcor_ic = wordnet_ic.ic('ic-semcor.dat')
 
 
+def combine_dictionary(official_wordlist, my_dictionary):
+    official_wordlist1 = list(official_wordlist)
+    for category in my_dictionary:
+        word_list = my_dictionary[category]
+        for word in word_list:
+            official_wordlist1.append(word)
+    official_wordlist2 = set(official_wordlist1)
+    return official_wordlist2
+
+
 def tag2word(tag_list):
     result_list = list()
     unsolved_list = list()
@@ -97,8 +107,8 @@ sample_media_code = 'BGUNUTcMhvo'
 sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
 sample_public_user_name = 'silisunglasses'
-teststring = 'thisisabird'
-
+dictionary = load_dictionary('Instagram_tag_dictionary.json')
+wordlist = combine_dictionary(wordlist, dictionary)
 spider = InstagramSpider()
 # username = 'hongming0611'
 # password = 'zhm940330'
@@ -108,7 +118,7 @@ print('data got...')
 print('analyzing tags from user: ' + sample_public_user_name)
 words, unsolved_data = tag2word(data)
 successful_rate(words, unsolved_data)
-dictionary = load_dictionary('Instagram_tag_dictionary.json')
+
 print('analyzing words from tags from user: ' + sample_public_user_name)
 result, rate = analyze_words(words, dictionary)
 print(result)
