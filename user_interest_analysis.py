@@ -44,8 +44,8 @@ def display_result(dict, confidence, username):
     for t in p_text:
         t.set_size = 4
     plt.axis('equal')
-    plt.text(-1.35, 1.25, 'username: ' + username, fontsize=15)
-    plt.text(-1.35, 1.15, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
+    plt.text(-1.2, 1.1, 'username: ' + username, fontsize=15)
+    plt.text(-1.2, 1, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
     plt.show()
 
 
@@ -145,7 +145,10 @@ def analyze_words(words, dictionary):
         for category in local_similarity_dictionary:
             if local_similarity_dictionary[category] > local_similarity_dictionary[final_category]:
                 final_category = category
-        if local_similarity_dictionary[final_category] > 5:
+        if local_similarity_dictionary[final_category] > 3:
+            if local_similarity_dictionary[final_category] > 4:
+                if word_pair[0] not in dictionary[final_category]:
+                    dictionary[final_category].append(word_pair[0])
             find_category = True
             distribution_dictionary[final_category].append(word_pair)
         if not find_category:
@@ -163,6 +166,7 @@ def analyze_words(words, dictionary):
     for category in percentage_dictionary:
         percentage_dictionary[category] /= total_words
     print('done...')
+    store_dictionary('Instagram_tag_dictionary.json', dictionary)
     return similarity_dictionary, rate, distribution_dictionary, percentage_dictionary
 
 
@@ -190,6 +194,6 @@ print('similarity result: ')
 print(result)
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
+print(distribute_result['unknown'])
 display_result(percentage_result, recognize_rate, sample_public_user_name)
-
 print('end')
