@@ -60,6 +60,7 @@ def get_user_follower_list(name, id, end_cursor=None):
         get_user_follower_list(name, id, next_end_cursor)
 
 
+
 get_user_follower_list('yy_god', 1542518799)
 
 
