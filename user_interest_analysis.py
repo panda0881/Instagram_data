@@ -102,6 +102,7 @@ def analyze_words(words, dictionary):
     one_tenth = int(len(words)/10)
     current_number = 0
     progress = 0
+    total_words = 0
     for word_pair in words:
         find_category = False
         current_number += 1
@@ -113,6 +114,7 @@ def analyze_words(words, dictionary):
             if word_pair[0] in dictionary[category]:
                 valid_word_count += 1
                 similarity_dictionary[category] += 10 * word_pair[1]
+                total_number += word_pair[1]
                 distribution_dictionary[category].append(word_pair)
                 find_category = True
                 break
@@ -127,7 +129,7 @@ def analyze_words(words, dictionary):
         for category in dictionary:
             word_list = dictionary[category]
             total_similarity = 0
-            total_words = 0
+            total_categary_words = 0
             for test_word in word_list:
                 try:
                     test = wn.synsets(test_word)[0]
@@ -135,12 +137,12 @@ def analyze_words(words, dictionary):
                     continue
                 try:
                     total_similarity += word.res_similarity(test, brown_ic)
-                    total_words += 1
+                    total_categary_words += 1
                 except:
                     continue
-            if total_words > 0:
-                similarity_dictionary[category] += word_pair[1] * total_similarity / total_words
-                local_similarity_dictionary[category] = total_similarity / total_words
+            if total_categary_words > 0:
+                similarity_dictionary[category] += word_pair[1] * total_similarity / total_categary_words
+                local_similarity_dictionary[category] = total_similarity / total_categary_words
         final_category = 'others'
         for category in local_similarity_dictionary:
             if local_similarity_dictionary[category] > local_similarity_dictionary[final_category]:
@@ -157,7 +159,7 @@ def analyze_words(words, dictionary):
         similarity_dictionary[category] /= total_number
     rate = valid_word_count/len(words)
     percentage_dictionary = dict()
-    total_words = 0
+
     for category in distribution_dictionary:
         percentage_dictionary[category] = 0
         for word_pair2 in distribution_dictionary[category]:
