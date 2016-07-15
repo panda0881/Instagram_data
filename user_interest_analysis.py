@@ -137,7 +137,7 @@ dictionary = load_dictionary('Instagram_tag_dictionary.json')
 wordlist = combine_dictionary(wordlist, dictionary)
 spider = InstagramSpider()
 # username = 'hongming0611'
-# password = 'zhm940330'
+# password = input('hi, ' + username + 'please give me your password: ')
 # spider.login(username, password)
 data = get_data(spider, sample_public_user_name)
 print('data got...')

@@ -27,7 +27,7 @@ def main():
     start_time = time.time()
     spider = InstagramSpider()
     username = 'hongming0611'
-    password = 'zhm940330'
+    password = input('hi, ' + username + 'please give me your password: ')
     spider.login(username, password)
     field_names = ['username', 'location', 'fullname', 'biography', 'followed by', 'tags']
     result = dict()
