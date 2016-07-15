@@ -1,7 +1,6 @@
 from Instagram_Spider import *
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import words
-from textblob import *
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic
 from matplotlib import pyplot as plt
@@ -13,7 +12,7 @@ brown_ic = wordnet_ic.ic('ic-brown.dat')
 semcor_ic = wordnet_ic.ic('ic-semcor.dat')
 
 
-def display_result(dict, confidence, username):
+def display_result(data_dict, confidence, username):
     plt.figure(figsize=(9, 9))
     labels = ['family', 'sport', 'animal', 'art', 'technology', 'life', 'fashion', 'food', 'travel']
     colors = ['green', 'blue', 'cyan', 'purple', 'orange', 'pink', 'seagreen', 'red', 'yellow']
@@ -23,10 +22,10 @@ def display_result(dict, confidence, username):
     current_value = 0
     total_value = 0
     for label in labels:
-        sizes.append(dict[label])
-        total_value += dict[label]
-        if dict[label] > current_value:
-            current_value = dict[label]
+        sizes.append(data_dict[label])
+        total_value += data_dict[label]
+        if data_dict[label] > current_value:
+            current_value = data_dict[label]
             max_label = label
     for label in labels:
         if label == max_label:
@@ -49,14 +48,14 @@ def display_result(dict, confidence, username):
     plt.show()
 
 
-def combine_dictionary(official_wordlist, my_dictionary):
-    official_wordlist1 = list(official_wordlist)
-    for category in my_dictionary:
-        word_list = my_dictionary[category]
+def combine_dictionary(official_wordlist, dictionary):
+    official_word_list1 = list(official_wordlist)
+    for category in dictionary:
+        word_list = dictionary[category]
         for word in word_list:
-            official_wordlist1.append(word)
-    official_wordlist2 = set(official_wordlist1)
-    return official_wordlist2
+            official_word_list1.append(word)
+    official_word_list2 = set(official_word_list1)
+    return official_word_list2
 
 
 def tag2word(tag_list):
@@ -88,7 +87,7 @@ def tag2word(tag_list):
     return result_list, unsolved_list
 
 
-def analyze_words(words, dictionary):
+def analyze_words(my_words, dictionary):
     similarity_dictionary = dict()
     local_similarity_dictionary = dict()
     distribution_dictionary = dict()
@@ -99,11 +98,11 @@ def analyze_words(words, dictionary):
         local_similarity_dictionary[category] = 0
         distribution_dictionary[category] = list()
     distribution_dictionary['unknown'] = list()
-    one_tenth = int(len(words)/10)
+    one_tenth = int(len(my_words)/10)
     current_number = 0
     progress = 0
     total_words = 0
-    for word_pair in words:
+    for word_pair in my_words:
         find_category = False
         current_number += 1
         if current_number > one_tenth:
@@ -157,7 +156,7 @@ def analyze_words(words, dictionary):
             distribution_dictionary['unknown'].append(word_pair)
     for category in similarity_dictionary:
         similarity_dictionary[category] /= total_number
-    rate = valid_word_count/len(words)
+    recognition_rate = valid_word_count/len(my_words)
     percentage_dictionary = dict()
 
     for category in distribution_dictionary:
@@ -169,15 +168,15 @@ def analyze_words(words, dictionary):
         percentage_dictionary[category] /= total_words
     print('done...')
     store_dictionary('Instagram_tag_dictionary.json', dictionary)
-    return similarity_dictionary, rate, distribution_dictionary, percentage_dictionary
+    return similarity_dictionary, recognition_rate, distribution_dictionary, percentage_dictionary
 
 
 sample_media_code = 'BGUNUTcMhvo'
 sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
 sample_public_user_name = 'silisunglasses'
-dictionary = load_dictionary('Instagram_tag_dictionary.json')
-wordlist = combine_dictionary(wordlist, dictionary)
+my_dictionary = load_dictionary('Instagram_tag_dictionary.json')
+wordlist = combine_dictionary(wordlist, my_dictionary)
 spider = InstagramSpider()
 # username = 'hongming0611'
 # password = input('hi, ' + username + 'please give me your password: ')
@@ -185,17 +184,17 @@ spider = InstagramSpider()
 data = get_data(spider, sample_public_user_name)
 print('data got...')
 print('analyzing tags from user: ' + sample_public_user_name)
-words, unsolved_data = tag2word(data)
-rate1 = successful_rate(words, unsolved_data)
+words_from_tags, unsolved_data = tag2word(data)
+rate1 = successful_rate(words_from_tags, unsolved_data)
 print("successful rate of extracting from hashtag is：%.2f%%" % (rate1 * 100))
 print('analyzing words from tags from user: ' + sample_public_user_name)
-result, rate, distribute_result, percentage_result = analyze_words(words, dictionary)
+result, rate, distribute_result, percentage_result = analyze_words(words_from_tags, my_dictionary)
 
 print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
 print('similarity result: ')
 print(result)
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
-print(distribute_result['unknown'])
+# print(distribute_result['unknown'])
 display_result(percentage_result, recognize_rate, sample_public_user_name)
 print('end')
