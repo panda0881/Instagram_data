@@ -32,11 +32,10 @@ Input is your own user name and password for Instagram and thus the scraper can 
 
 To-do list:
 ---------
-1.	Collecting data about user’s follower and following list
+1.	Collecting data about user’s following list
 2.	Collecting data about the full media list of a tag
 3.	Developing a mechanism to evaluate the social influence power of a specific user based on his medias
-4.	Developing a mechanism to filter all the tags about a user to find out his interest area
-5.	Using all the tags existing in a specific user's posts to analyze his interest area
+4.	Using all the tags existing in a specific user's posts to analyze his interest area
 
 Remarks:
 ---------
