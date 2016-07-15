@@ -79,7 +79,6 @@ def successful_rate(successful_list, fail_list):
     return rate
 
 
-
 def clean_up_string(str):
     characters = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
     newstring = ''

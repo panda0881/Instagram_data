@@ -34,7 +34,7 @@ def tag2word(tag_list):
             progress += 1
             current_number = 0
             print('finish ' + str(progress) + '0%')
-        tag = tag_pair[0]
+        tag = clean_up_string(tag_pair[0]).lower()
         tag = clean_up_string(tag)
         pos = len(tag)
         while pos > 1:
