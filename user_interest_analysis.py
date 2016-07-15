@@ -4,12 +4,49 @@ from nltk.corpus import words
 from textblob import *
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic
+from matplotlib import pyplot as plt
 
 
 wordlist = set(words.words())
 wordnet_lemmatizer = WordNetLemmatizer()
 brown_ic = wordnet_ic.ic('ic-brown.dat')
 semcor_ic = wordnet_ic.ic('ic-semcor.dat')
+
+
+def display_result(dict, confidence, username):
+    plt.figure(figsize=(9, 9))
+    labels = ['family', 'sport', 'animal', 'art', 'technology', 'life', 'fashion', 'food', 'travel']
+    colors = ['green', 'blue', 'cyan', 'purple', 'orange', 'pink', 'seagreen', 'red', 'yellow']
+    sizes = list()
+    explode_list = list()
+    max_label = ''
+    current_value = 0
+    total_value = 0
+    for label in labels:
+        sizes.append(dict[label])
+        total_value += dict[label]
+        if dict[label] > current_value:
+            current_value = dict[label]
+            max_label = label
+    for label in labels:
+        if label == max_label:
+            explode_list.append(0.1)
+        else:
+            explode_list.append(0)
+    final_sizes = list()
+    for size in sizes:
+        final_sizes.append(size/total_value)
+    explode = tuple(explode_list)
+    patches, l_text, p_text = plt.pie(final_sizes, explode=explode, labels=labels, colors=colors,
+                                      autopct='%3.1f%%', shadow=False, startangle=90, pctdistance=0.7)
+    for t in l_text:
+        t.set_size = 12
+    for t in p_text:
+        t.set_size = 4
+    plt.axis('equal')
+    plt.text(-1.35, 1.25, 'username: ' + username, fontsize=15)
+    plt.text(-1.35, 1.15, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
+    plt.show()
 
 
 def combine_dictionary(official_wordlist, my_dictionary):
@@ -153,5 +190,6 @@ print('similarity result: ')
 print(result)
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
+display_result(percentage_result, recognize_rate, sample_public_user_name)
 
 print('end')
