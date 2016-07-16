@@ -22,40 +22,53 @@ import re
 import os
 from collections import Counter`
  2. **Main method usage and introduction:**
+ 
  1.`login(self, username, password):`
  This method is used for log-in activity. The input value of this method is your own personal Instagram username and password and spider will keep the log-in state through this method.
+
  2.`get_user_data(self, name):` 
  The input of this method is the username you are interested in.
  The output of this method is a [JSON](http://www.json.org/) file containing all the personal information about this specific user.
+ 
  3.`get_tag_data(self, tag_name):`
  The input of this method is the name of the tag you are interested in.
  The output of this method is a [JSON](http://www.json.org/) file containing all the data about this specific tag.
+ 
  4.`get_media_data(self, media_code):`
  The input of this method is the code of the media you are interested in.
  The output of this method is a [JSON](http://www.json.org/) file containing all the data about this specific media.
+ 
  5.`get_user_followers_and_follows(self, name):`
  The input of this method is the username you are interested in.
  The output of this method are two lists. The first one is the follower list of this specific user, while the second one is the follow list of this specific user.
+ 
  6.`download_user_media(self, name, max_id=None):`
  The input of this method is the username you are interested in and this method will download and store all of the medias that belong to this specific user to a folder named by the user's name.
+ 
  7.`get_tag_from_media(self, media_code):`
  The input of this method is the media code you are interested in.
  The output of this method is a list containing all the tags appearing in this media.
+ 
  8.`get_media_from_tag(self, tag_name):`
  The input of this method is the tag name you are interested in.
- The output of this method are two lists. The first one contains all the media codes belong to top_post under this tag, while the second one is the full list of all the media codes under this tag
+ The output of this method are two lists. The first one contains all the media codes belong to top_post under this tag, while the second one is the full list of all the media codes under this tag.
+ 
  9.`get_user_from_media(self, media_code):`
  The input of this method is the media code you are interested in.
  The output of this method is a list containing all the username who is active under this media.
+ 
  10.`get_media_from_user(name):`
  The input of this method is the username you are interested in.
  The output of this method is a list containing the first 20 media codes of this user.
+ 
  11.`get_user_from_tag(self, tag_name):`
  The input of this method is the tag name you are interested in.
  The output of this method is a list containing all the username who is related to this tag through media.
+ 
  12.`get_all_tag_from_user(self, name):`
  The input of this method is the username you are interested in.
  The output of this method is a list containing all the tags appearing in this user's medias.
+ 
  13.`get_tag_from_user(self, name):` (shorter version of the above one)
  The input of this method is the username you are interested in.
  The output of this method is a list containing all the tags appearing in this user's first 20 medias.
@@ -63,7 +76,9 @@ from collections import Counter`
  
  
  3. **Reminders:**
+ 
  1.For the function that require log-in (like getting follower and follow list or collect media from a tag), you may need to log-in first.
+
  2.For the cookie part I used in this class, you may need to renew it. 
  PS: you can get that through your browser
  
