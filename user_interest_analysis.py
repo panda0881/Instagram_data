@@ -12,6 +12,62 @@ brown_ic = wordnet_ic.ic('ic-brown.dat')
 semcor_ic = wordnet_ic.ic('ic-semcor.dat')
 
 
+def store_tag_data(name, tag_data):
+    file_name = name + '_tag_data.json'
+    file = open(file_name, 'w')
+    json.dump(tag_data, file)
+    file.close()
+
+
+def load_tag_data(name):
+    file_name = name + '_tag_data.json'
+    file = open(file_name, 'r')
+    tag_data = json.load(file)
+    file.close()
+    return tag_data
+
+def get_data(spider, name):
+    file_name = name + '_tag_data.json'
+    if os.path.isfile(file_name):
+        tag_data = load_tag_data(name)
+    else:
+        tag_data = spider.get_all_tag_from_user(name)
+        store_tag_data(name, tag_data)
+    return tag_data
+
+def clean_up_string(old_string):
+    characters = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
+    new_string = ''
+    for char in old_string:
+        if char in characters:
+            new_string += char
+    return new_string.lower()
+
+
+def successful_rate(successful_list, fail_list):
+    successful_number = 0
+    fail_number = 0
+    for tag_pair in successful_list:
+        successful_number += tag_pair[1]
+    for tag_pair in fail_list:
+        fail_number += tag_pair[1]
+    rate = successful_number/(successful_number+fail_number)
+    return rate
+
+
+def store_dictionary(dict_name, dict_data):
+    file = open(dict_name, 'w')
+    json.dump(dict_data, file)
+    file.close()
+
+
+def load_dictionary(dict_name):
+    file = open(dict_name, 'r')
+    dict_data = json.load(file)
+    file.close()
+    return dict_data
+
+
 def display_result(data_dict, confidence, username):
     plt.figure(figsize=(9, 9))
     labels = ['family', 'sport', 'animal', 'art', 'technology', 'life', 'fashion', 'food', 'travel']
