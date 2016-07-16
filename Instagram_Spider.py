@@ -79,13 +79,13 @@ def successful_rate(successful_list, fail_list):
     return rate
 
 
-def clean_up_string(str):
+def clean_up_string(old_string):
     characters = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
-    newstring = ''
-    for char in str:
+    new_string = ''
+    for char in old_string:
         if char in characters:
-            newstring += char
-    return newstring.lower()
+            new_string += char
+    return new_string.lower()
 
 
 class InstagramSpider:
@@ -97,9 +97,15 @@ class InstagramSpider:
         self.full_media_list = list()
         self.follower_list = list()
         self.follow_list = list()
-
+        self.username = ''
+        self.password = ''
+        self.owner_id = 0
 
     def login(self, username, password):
+        self.username = username
+        self.password = password
+        owner_data = self.get_user_data(username)
+        self.owner_id = owner_data['id']
         headers = {
             'accept': '*/*',
             'accept-encoding': 'gzip, deflate, br',
@@ -126,7 +132,8 @@ class InstagramSpider:
         data = json.loads(tmp2)['entry_data']['ProfilePage'][0]['user']
         return data
 
-    def get_user_media_data(self, name):
+    @staticmethod
+    def get_user_media_data(name):
         url = 'http://instagram.com/' + name + '/media'
         resp = requests.get(url)
         media = json.loads(resp.text)
@@ -149,7 +156,7 @@ class InstagramSpider:
             max_id = media['items'][-1]['id']
             self.get_user_full_media_data(name=name, max_id=max_id)
 
-    def collect_followers(self, cookie, name, id, end_cursor=None):
+    def collect_followers(self, cookie, name, user_id, end_cursor=None):
         referer = 'https://www.instagram.com/' + name + '/'
         headers = {
             'accept': '*/*',
@@ -166,7 +173,11 @@ class InstagramSpider:
             'x-requested-with': 'XMLHttpRequest'
         }
         if not end_cursor:
-            data = 'q=ig_user(' + id + ')+%7B%0A++followed_by.first(10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            data = 'q=ig_user(' + user_id + \
+                   ')+%7B%0A++followed_by.first(10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A+' \
+                   '+++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++fol' \
+                   'lowed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2' \
+                   'C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
             result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
             data = result.json()
             for user in data['followed_by']['nodes']:
@@ -174,7 +185,11 @@ class InstagramSpider:
             next_page = data['followed_by']['page_info']['has_next_page']
             next_end_cursor = data['followed_by']['page_info']['end_cursor']
         else:
-            data = 'q=ig_user(' + id + ')+%7B%0A++followed_by.after(' + end_cursor + ', 10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            data = 'q=ig_user(' + user_id + ')+%7B%0A++followed_by.after(' + end_cursor + \
+                   ', 10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%' \
+                   '7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A+++++' \
+                   '+requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%' \
+                   '7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
             result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
             data = result.json()
             for user in data['followed_by']['nodes']:
@@ -182,9 +197,9 @@ class InstagramSpider:
             next_page = data['followed_by']['page_info']['has_next_page']
             next_end_cursor = data['followed_by']['page_info']['end_cursor']
         if next_page:
-            self.collect_followers(cookie, name, id, next_end_cursor)
+            self.collect_followers(cookie, name, user_id, next_end_cursor)
 
-    def collect_follows(self, cookie, name, id, end_cursor=None):
+    def collect_follows(self, cookie, name, user_id, end_cursor=None):
         referer = 'https://www.instagram.com/' + name + '/'
         headers = {
             'accept': '*/*',
@@ -201,7 +216,11 @@ class InstagramSpider:
             'x-requested-with': 'XMLHttpRequest'
         }
         if not end_cursor:
-            data = 'q=ig_user(' + id + ')+%7B%0A++follows.first(10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            data = 'q=ig_user(' + user_id + \
+                   ')+%7B%0A++follows.first(10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A+++++' \
+                   '+has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followe' \
+                   'd_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A' \
+                   '++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
             result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
             data = result.json()
             for user in data['follows']['nodes']:
@@ -209,7 +228,11 @@ class InstagramSpider:
             next_page = data['follows']['page_info']['has_next_page']
             next_end_cursor = data['follows']['page_info']['end_cursor']
         else:
-            data = 'q=ig_user(' + id + ')+%7B%0A++follows.after(' + end_cursor + ', 10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            data = 'q=ig_user(' + user_id + ')+%7B%0A++follows.after(' + end_cursor + \
+                   ', 10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%' \
+                   '7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A+++++' \
+                   '+requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%' \
+                   '7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
             result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
             data = result.json()
             for user in data['follows']['nodes']:
@@ -217,25 +240,25 @@ class InstagramSpider:
             next_page = data['follows']['page_info']['has_next_page']
             next_end_cursor = data['follows']['page_info']['end_cursor']
         if next_page:
-            self.collect_follows(cookie, name, id, next_end_cursor)
+            self.collect_follows(cookie, name, user_id, next_end_cursor)
 
     def get_user_followers_and_follows(self, name):
         self.follower_list = list()
         self.follow_list = list()
-        cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; ' \
-             'sessionid=IGSC180da69381c0a14e9dc9f9e4bc769c4019e8f3583dcd817d5bc7968985b55952%3Anv7S014E4DnNKVqcm8aj7S' \
-             'pMQeJEFoGM%3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%' \
-             '3AfEsxWL60kGe9CTcT6SZip5YZ5FkYrdGL%3A0343dc6e70184bce7f5dcad622b15ea4c9f9db7527ff9183d1b8415e16a66c62%2' \
-             '2%2C%22asns%22%3A%7B%2261.216.163.33%22%3A3462%2C%22time%22%3A1468545499%7D%2C%22_auth_user_backend%22%' \
-             '3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22last_refreshed%22%3A1468545499.109788%2C%22_' \
-             'platform%22%3A4%7D; ig_pr=1; ig_vw=729; fbsr_124024574287414=7NY3P64retR7WLLnDGB-12lgJNuu4T8sMZfjnQjqvo' \
-             '4.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJBUUFDTnl1aUhpWUdjOHVJWFFCbXF0dFdaLUc5SngtcklqaGNpalhNb' \
-             'DFpQ0hhZDZyM3ZrNHRkWDUzYWhtdmxZZ1dwTGRLbXo2a1lnLW9XS3J0OWlZcUVvUEFubngyTnlrenBoUGJrX09wamdQWVQ1WExVX1lO' \
-             'RExvWEMxdzdYZFVUbWpzb3UxVW45LXBLLWxlaUotN3FfVDdXdHRUc1FhT3JmYXRVYmszWHpfY1laZUl4RXcwRUlLWERJRTBoTEtSaUY' \
-             '5Z29aWkM4M3BvblZwQWgyY1BjTUgxR2RrQlBkSEEzOUJIbVFQMjBXWnJwa2ZfRy1kMVZrY1FyUlk3a1ozQTQza2lGbEtCeUtpY0tmX2' \
-             '9aRlBLWVpZNms1MUl4WTlrZEpjbFpZYVk0OWFybWhvbTJOaWZRTldyc2V3T3lzUGkxOUVOQVZTY1poR0NfU3hEa2xmR0JjMCIsImlzc' \
-             '3VlZF9hdCI6MTQ2ODU4NzI4NSwidXNlcl9pZCI6IjEwMDAwNDI2NTg2MDQ3MCJ9; s_network=; csrftoken=7807d567fcdc9d26' \
-             'b384856155415008; ds_user_id=' + str(3164739822)
+        cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; sessionid=IGSC94' \
+                 '18aaf857177c99ed52a2e6c37e6a251074f891282a715fdd7c3aca86705f08%3Aw2geyFDrzzVKRERueIyLgESNUXoOcAqE%' \
+                 '3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%3AfEsx' \
+                 'WL60kGe9CTcT6SZip5YZ5FkYrdGL%3A0343dc6e70184bce7f5dcad622b15ea4c9f9db7527ff9183d1b8415e16a66c62%22' \
+                 '%2C%22asns%22%3A%7B%2261.216.161.9%22%3A3462%2C%22time%22%3A1468633377%7D%2C%22_auth_user_backend%' \
+                 '22%3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22last_refreshed%22%3A1468633378.08871' \
+                 '9%2C%22_platform%22%3A4%7D; s_network=; ig_pr=1; ig_vw=729; fbsr_124024574287414=NB0xYjmjejvWC_OH0' \
+                 '3uAQgqjPuT6piawnl6bht1Eue4.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJBUUFfNDlJbGprRTBUZ2JPSXZ' \
+                 'PQ0FpVEFpek5RMFRoM0x2TTNLOTFnRGVXVlhiaXNRSFdnSjRrOWQ3OFJRaGd1RmFGeWROQy1kU0pibmpTTmJFWjZISVU5bnd1a' \
+                 'HczVTdVMF9XNGZOekVxWnNpT2IwT1dVcVdLeWJKYUVrRFRSRzhfRUZlUmtxejdsOWVReFBGTm9qNWtGQ0E0ODc3Wl9YMmg0RER' \
+                 '3SFdUdkxQSmhGdlpEejA5ME45YXZsOGw0eFJ4VzBvcVpwRG4yQW45dXlnMU4yOTFDcjNMTU5FT3pXb0l1RW02UHRJeEdJU0xHU' \
+                 'VgtME40c09vdDRzekxHY0lvTjhaREpkRVNFc2szMU5RZHoyOEJxVGNZTExMZTBjbE1rbDJVcWNhOGNsTFFvTUFHdGw2OU5sVk5' \
+                 'rZGp1dTdHUTl2cHIzaTU4cWkwalJBelRLNnI4ZFktSSIsImlzc3VlZF9hdCI6MTQ2ODY1ODk4OSwidXNlcl9pZCI6IjEwMDAwN' \
+                 'DI2NTg2MDQ3MCJ9; csrftoken=7807d567fcdc9d26b384856155415008; ds_user_id=' + str(self.owner_id)
         data = self.get_user_data(name)
         user_id = data['id']
         self.collect_followers(cookie, name, user_id)
@@ -272,7 +295,8 @@ class InstagramSpider:
             max_id = media['items'][-1]['id']
             self.download_user_media(name=name, max_id=max_id)
 
-    def download(self, item, save_dir='./'):
+    @staticmethod
+    def download(item, save_dir='./'):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         item['url'] = item[item['type'] + 's']['standard_resolution']['url']
@@ -280,9 +304,7 @@ class InstagramSpider:
         base_name = item['url'].split('/')[-1].split('?')[0]
         file_path = os.path.join(save_dir, base_name)
         with open(file_path, 'wb') as file:
-            bytes = requests.get(item['url']).content
-            file.write(bytes)
-
+            file.write(requests.get(item['url']).content)
         file_time = int(item['created_time'])
         os.utime(file_path, (file_time, file_time))
 
@@ -321,20 +343,14 @@ class InstagramSpider:
         return tag_list
 
     def collect_media_list(self, tag_name, end_cursor):
-        cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; ' \
-                 'sessionid=IGSC180da69381c0a14e9dc9f9e4bc769c4019e8f3583dcd817d5bc7968985b55952%3Anv7S014E4DnNKVqcm8aj7S' \
-                 'pMQeJEFoGM%3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%' \
-                 '3AfEsxWL60kGe9CTcT6SZip5YZ5FkYrdGL%3A0343dc6e70184bce7f5dcad622b15ea4c9f9db7527ff9183d1b8415e16a66c62%2' \
-                 '2%2C%22asns%22%3A%7B%2261.216.163.33%22%3A3462%2C%22time%22%3A1468545499%7D%2C%22_auth_user_backend%22%' \
-                 '3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22last_refreshed%22%3A1468545499.109788%2C%22_' \
-                 'platform%22%3A4%7D; ig_pr=1; ig_vw=729; fbsr_124024574287414=7NY3P64retR7WLLnDGB-12lgJNuu4T8sMZfjnQjqvo' \
-                 '4.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJBUUFDTnl1aUhpWUdjOHVJWFFCbXF0dFdaLUc5SngtcklqaGNpalhNb' \
-                 'DFpQ0hhZDZyM3ZrNHRkWDUzYWhtdmxZZ1dwTGRLbXo2a1lnLW9XS3J0OWlZcUVvUEFubngyTnlrenBoUGJrX09wamdQWVQ1WExVX1lO' \
-                 'RExvWEMxdzdYZFVUbWpzb3UxVW45LXBLLWxlaUotN3FfVDdXdHRUc1FhT3JmYXRVYmszWHpfY1laZUl4RXcwRUlLWERJRTBoTEtSaUY' \
-                 '5Z29aWkM4M3BvblZwQWgyY1BjTUgxR2RrQlBkSEEzOUJIbVFQMjBXWnJwa2ZfRy1kMVZrY1FyUlk3a1ozQTQza2lGbEtCeUtpY0tmX2' \
-                 '9aRlBLWVpZNms1MUl4WTlrZEpjbFpZYVk0OWFybWhvbTJOaWZRTldyc2V3T3lzUGkxOUVOQVZTY1poR0NfU3hEa2xmR0JjMCIsImlzc' \
-                 '3VlZF9hdCI6MTQ2ODU4NzI4NSwidXNlcl9pZCI6IjEwMDAwNDI2NTg2MDQ3MCJ9; s_network=; csrftoken=7807d567fcdc9d26' \
-                 'b384856155415008; ds_user_id=' + str(3164739822)
+        cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; sessionid=IGSC94' \
+                 '18aaf857177c99ed52a2e6c37e6a251074f891282a715fdd7c3aca86705f08%3Aw2geyFDrzzVKRERueIyLgESNUXoOcAqE%' \
+                 '3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%3AfEsx' \
+                 'WL60kGe9CTcT6SZip5YZ5FkYrdGL%3A0343dc6e70184bce7f5dcad622b15ea4c9f9db7527ff9183d1b8415e16a66c62%22' \
+                 '%2C%22asns%22%3A%7B%2261.216.161.9%22%3A3462%2C%22time%22%3A1468633377%7D%2C%22_auth_user_backend%' \
+                 '22%3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22last_refreshed%22%3A1468633378.08871' \
+                 '9%2C%22_platform%22%3A4%7D; ig_pr=1; ig_vw=729; csrftoken=7807d567fcdc9d26b384856155415008; s_netw' \
+                 'ork=; ds_user_id=' + str(self.owner_id)
         referer = 'https://www.instagram.com/explore/tags/' + tag_name + '/'
         headers = {
             'accept': '*/*',
@@ -350,7 +366,12 @@ class InstagramSpider:
             'x-instagram-ajax': 1,
             'x-requested-with': 'XMLHttpRequest'
         }
-        data = 'q=ig_hashtag(' + tag_name + ')+%7B+media.after(' + end_cursor + '%2C+10)+%7B%0A++count%2C%0A++nodes+%7B%0A++++caption%2C%0A++++code%2C%0A++++comments+%7B%0A++++++count%0A++++%7D%2C%0A++++date%2C%0A++++dimensions+%7B%0A++++++height%2C%0A++++++width%0A++++%7D%2C%0A++++display_src%2C%0A++++id%2C%0A++++is_video%2C%0A++++likes+%7B%0A++++++count%0A++++%7D%2C%0A++++owner+%7B%0A++++++id%0A++++%7D%2C%0A++++thumbnail_src%2C%0A++++video_views%0A++%7D%2C%0A++page_info%0A%7D%0A+%7D&ref=tags%3A%3Ashow'
+        data = 'q=ig_hashtag(' + tag_name + ')+%7B+media.after(' + end_cursor + \
+               '%2C+10)+%7B%0A++count%2C%0A++nodes+%7B%0A++++caption%2C%0A++++code%2C%0A++++comments+%7B%0A++++++coun' \
+               't%0A++++%7D%2C%0A++++date%2C%0A++++dimensions+%7B%0A++++++height%2C%0A++++++width%0A++++%7D%2C%0A++++' \
+               'display_src%2C%0A++++id%2C%0A++++is_video%2C%0A++++likes+%7B%0A++++++count%0A++++%7D%2C%0A++++owner+%' \
+               '7B%0A++++++id%0A++++%7D%2C%0A++++thumbnail_src%2C%0A++++video_views%0A++%7D%2C%0A++page_info%0A%7D%0A' \
+               '+%7D&ref=tags%3A%3Ashow'
         tmp_result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
         result = tmp_result.json()
         for media in result['media']['nodes']:
