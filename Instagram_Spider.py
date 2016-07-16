@@ -96,6 +96,7 @@ class InstagramSpider:
         self.s = requests.session()
         self.full_media_list = list()
         self.follower_list = list()
+        self.follow_list = list()
 
     def login(self, username, password):
         headers = {
@@ -182,8 +183,44 @@ class InstagramSpider:
         if next_page:
             self.get_user_follower_list(cookie, name, id, next_end_cursor)
 
-    def get_user_followers(self, name):
+    def get_user_follow_list(self, cookie, name, id, end_cursor=None):
+        referer = 'https://www.instagram.com/' + name + '/'
+        headers = {
+            'accept': '*/*',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.8,zh-TW;q=0.6,en;q=0.4',
+            'content-type': 'application/x-www-form-urlencoded',
+            'cookie': cookie,
+            'origin': 'https://www.instagram.com',
+            'referer': referer,
+            'user-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/51.0.2704.103 Safari/537.36',
+            'x-csrftoken': '7807d567fcdc9d26b384856155415008',
+            'x-instagram-ajax': 1,
+            'x-requested-with': 'XMLHttpRequest'
+        }
+        if not end_cursor:
+            data = 'q=ig_user(' + id + ')+%7B%0A++follows.first(10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
+            data = result.json()
+            for user in data['follows']['nodes']:
+                self.follow_list.append(user['username'])
+            next_page = data['follows']['page_info']['has_next_page']
+            next_end_cursor = data['follows']['page_info']['end_cursor']
+        else:
+            data = 'q=ig_user(' + id + ')+%7B%0A++follows.after(' + end_cursor + ', 10)+%7B%0A++++count%2C%0A++++page_info+%7B%0A++++++end_cursor%2C%0A++++++has_next_page%0A++++%7D%2C%0A++++nodes+%7B%0A++++++id%2C%0A++++++is_verified%2C%0A++++++followed_by_viewer%2C%0A++++++requested_by_viewer%2C%0A++++++full_name%2C%0A++++++profile_pic_url%2C%0A++++++username%0A++++%7D%0A++%7D%0A%7D%0A&ref=relationships%3A%3Afollow_list'
+            result = self.s.post('https://www.instagram.com/query/', data=data, headers=headers)
+            data = result.json()
+            for user in data['follows']['nodes']:
+                self.follow_list.append(user['username'])
+            next_page = data['follows']['page_info']['has_next_page']
+            next_end_cursor = data['follows']['page_info']['end_cursor']
+        if next_page:
+            self.get_user_follow_list(cookie, name, id, next_end_cursor)
+
+    def get_user_followers_and_follows(self, name):
         self.follower_list = list()
+        self.follow_list = list()
         cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; ' \
              'sessionid=IGSC180da69381c0a14e9dc9f9e4bc769c4019e8f3583dcd817d5bc7968985b55952%3Anv7S014E4DnNKVqcm8aj7S' \
              'pMQeJEFoGM%3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%' \
@@ -201,7 +238,8 @@ class InstagramSpider:
         data = self.get_user_data(name)
         user_id = data['id']
         self.get_user_follower_list(cookie, name, user_id)
-        return self.follower_list
+        self.get_user_follow_list(cookie, name, user_id)
+        return self.follower_list, self.follow_list
 
     def get_tag_data(self, tag_name):
         resp = self.s.get('http://instagram.com/explore/tags/' + tag_name)
