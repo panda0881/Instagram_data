@@ -60,15 +60,19 @@ class InstagramSpider:
         data = json.loads(tmp2)['entry_data']['ProfilePage'][0]['user']
         return data
 
-    @staticmethod
-    def get_user_media_data(name):
-        url = 'http://instagram.com/' + name + '/media'
-        resp = requests.get(url)
-        media = json.loads(resp.text)
-        media_list = list()
-        for item in media['items']:
-            media_list.append(item['code'])
-        return media_list
+    def get_tag_data(self, tag_name):
+        resp = self.s.get('http://instagram.com/explore/tags/' + tag_name)
+        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
+        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
+        data = json.loads(tmp2)['entry_data']['TagPage'][0]['tag']
+        return data
+
+    def get_media_data(self, media_code):
+        resp = self.s.get('http://instagram.com/p/' + media_code)
+        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
+        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
+        data = json.loads(tmp2)['entry_data']['PostPage'][0]['media']
+        return data
 
     def get_user_full_media_data(self, name, max_id=None):
         url = 'http://instagram.com/' + name + '/media'
@@ -192,20 +196,6 @@ class InstagramSpider:
         self.collect_followers(cookie, name, user_id)
         self.collect_followers(cookie, name, user_id)
         return self.follower_list, self.follow_list
-
-    def get_tag_data(self, tag_name):
-        resp = self.s.get('http://instagram.com/explore/tags/' + tag_name)
-        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
-        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
-        data = json.loads(tmp2)['entry_data']['TagPage'][0]['tag']
-        return data
-
-    def get_media_data(self, media_code):
-        resp = self.s.get('http://instagram.com/p/' + media_code)
-        tmp1 = resp.text[int(re.search('window._sharedData', resp.text).span()[1] + 3):]
-        tmp2 = tmp1[:re.search('</script>', tmp1).span()[0] - 1]
-        data = json.loads(tmp2)['entry_data']['PostPage'][0]['media']
-        return data
 
     def download_user_media(self, name, max_id=None):
         url = 'http://instagram.com/' + name + '/media'
@@ -331,6 +321,16 @@ class InstagramSpider:
         user_list = list(set(user_list))
         return user_list
 
+    @staticmethod
+    def get_media_from_user(name):
+        url = 'http://instagram.com/' + name + '/media'
+        resp = requests.get(url)
+        media = json.loads(resp.text)
+        media_list = list()
+        for item in media['items']:
+            media_list.append(item['code'])
+        return media_list
+
     def get_user_from_tag(self, tag_name):
         medias = self.get_media_from_tag(tag_name)
         user_list = list()
@@ -347,7 +347,7 @@ class InstagramSpider:
         return final_user_list
 
     def get_tag_from_user(self, name):
-        media_list = self.get_user_media_data(name)
+        media_list = self.get_media_from_user(name)
         tag_list = list()
         print('total number of medias from this user: ' + str(len(media_list)))
         for media in media_list:
