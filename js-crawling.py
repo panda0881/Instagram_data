@@ -1,4 +1,3 @@
-import requests
 from Instagram_Spider import *
 
 follower_list = list()
