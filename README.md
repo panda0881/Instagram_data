@@ -14,13 +14,8 @@ Advantages:
 Document:
 ---------
  1. **Library used:**
-As you can see from the following codes, these basic library is necessary for you to use this spider.
-`import concurrent.futures
-import json
-import requests
-import re
-import os
-from collections import Counter`
+The following libraries are used in this spider: concurrent.features, json, requests, re, os, collections
+
  2. **Main method usage and introduction:**
  
  1.`login(self, username, password):`
