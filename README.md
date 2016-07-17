@@ -99,8 +99,11 @@ from collections import Counter`
 Examples:
 ---------
 **I am trying to employ this spider to do some funny work. If possible, I will post those program and testing result into the example folder. Current sample project plan is as following:**
+
 1.	Develop a mechanism to evaluate the social influence power of a specific user based on his medias
+
 2.	Develop a mechanism to evaluate the interest distribution of a specific user based on his tags and maybe comments. (Using NLP)
+
 3.	Develop a mechanism to study the relationship between different tags
 
 
