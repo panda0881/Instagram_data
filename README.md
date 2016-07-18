@@ -14,13 +14,8 @@ Advantages:
 Document:
 ---------
  1. **Library used:**
-As you can see from the following codes, these basic library is necessary for you to use this spider.
-`import concurrent.futures
-import json
-import requests
-import re
-import os
-from collections import Counter`
+The following libraries are used in this spider: concurrent.features, json, requests, re, os, collections
+
  2. **Main method usage and introduction:**
  
  1.`login(self, username, password):`
@@ -99,8 +94,11 @@ from collections import Counter`
 Examples:
 ---------
 **I am trying to employ this spider to do some funny work. If possible, I will post those program and testing result into the example folder. Current sample project plan is as following:**
+
 1.	Develop a mechanism to evaluate the social influence power of a specific user based on his medias
+
 2.	Develop a mechanism to evaluate the interest distribution of a specific user based on his tags and maybe comments. (Using NLP)
+
 3.	Develop a mechanism to study the relationship between different tags
 
 
