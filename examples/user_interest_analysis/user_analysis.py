@@ -231,6 +231,7 @@ sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
 sample_public_user_name = 'silisunglasses'
 my_dictionary = load_dictionary('Instagram_tag_dictionary.json')
+
 wordlist = combine_dictionary(wordlist, my_dictionary)
 spider = InstagramSpider()
 # username = 'hongming0611'
@@ -239,15 +240,15 @@ spider = InstagramSpider()
 data = get_data(spider, sample_public_user_name)
 print('data got...')
 print('analyzing tags from user: ' + sample_public_user_name)
-words_from_tags, unsolved_data = tag2word(data)
-rate1 = successful_rate(words_from_tags, unsolved_data)
+words_from_tags, unsolved_data = tag2word(tag_list=data)
+rate1 = successful_rate(successful_list=words_from_tags, fail_list=unsolved_data)
 print("successful rate of extracting from hashtag is：%.2f%%" % (rate1 * 100))
 print('analyzing words from tags from user: ' + sample_public_user_name)
-result, rate, distribute_result, percentage_result = analyze_words(words_from_tags, my_dictionary)
+result, rate, distribute_result, percentage_result = analyze_words(my_words=words_from_tags, dictionary=my_dictionary)
 print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
 print('similarity result: ')
 print(result)
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
-display_result(percentage_result, recognize_rate, sample_public_user_name)
+display_result(data_dict=percentage_result, confidence=recognize_rate, username=sample_public_user_name)
 print('end')
