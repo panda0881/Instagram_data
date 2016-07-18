@@ -6,12 +6,6 @@ from nltk.corpus import wordnet_ic
 from matplotlib import pyplot as plt
 
 
-wordlist = set(words.words())
-wordnet_lemmatizer = WordNetLemmatizer()
-brown_ic = wordnet_ic.ic('ic-brown.dat')
-semcor_ic = wordnet_ic.ic('ic-semcor.dat')
-
-
 def store_tag_data(name, tag_data):
     file_name = name + '_tag_data.json'
     file = open(file_name, 'w')
@@ -26,14 +20,16 @@ def load_tag_data(name):
     file.close()
     return tag_data
 
-def get_data(spider, name):
+
+def get_data(my_spider, name):
     file_name = name + '_tag_data.json'
     if os.path.isfile(file_name):
         tag_data = load_tag_data(name)
     else:
-        tag_data = spider.get_all_tag_from_user(name)
+        tag_data = my_spider.get_all_tag_from_user(name)
         store_tag_data(name, tag_data)
     return tag_data
+
 
 def clean_up_string(old_string):
     characters = 'QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
@@ -51,8 +47,8 @@ def successful_rate(successful_list, fail_list):
         successful_number += tag_pair[1]
     for tag_pair in fail_list:
         fail_number += tag_pair[1]
-    rate = successful_number/(successful_number+fail_number)
-    return rate
+    my_rate = successful_number/(successful_number+fail_number)
+    return my_rate
 
 
 def store_dictionary(dict_name, dict_data):
@@ -104,8 +100,8 @@ def display_result(data_dict, confidence, username):
     plt.show()
 
 
-def combine_dictionary(official_wordlist, dictionary):
-    official_word_list1 = list(official_wordlist)
+def combine_dictionary(official_word_list, dictionary):
+    official_word_list1 = list(official_word_list)
     for category in dictionary:
         word_list = dictionary[category]
         for word in word_list:
@@ -226,7 +222,10 @@ def analyze_words(my_words, dictionary):
     store_dictionary('Instagram_tag_dictionary.json', dictionary)
     return similarity_dictionary, recognition_rate, distribution_dictionary, percentage_dictionary
 
-
+wordlist = set(words.words())
+wordnet_lemmatizer = WordNetLemmatizer()
+brown_ic = wordnet_ic.ic('ic-brown.dat')
+semcor_ic = wordnet_ic.ic('ic-semcor.dat')
 sample_media_code = 'BGUNUTcMhvo'
 sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
@@ -245,12 +244,10 @@ rate1 = successful_rate(words_from_tags, unsolved_data)
 print("successful rate of extracting from hashtag is：%.2f%%" % (rate1 * 100))
 print('analyzing words from tags from user: ' + sample_public_user_name)
 result, rate, distribute_result, percentage_result = analyze_words(words_from_tags, my_dictionary)
-
 print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
 print('similarity result: ')
 print(result)
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
-# print(distribute_result['unknown'])
 display_result(percentage_result, recognize_rate, sample_public_user_name)
 print('end')
