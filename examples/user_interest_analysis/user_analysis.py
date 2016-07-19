@@ -97,6 +97,8 @@ def display_result(data_dict, confidence, username):
     plt.axis('equal')
     plt.text(-1.2, 1.1, 'username: ' + username, fontsize=15)
     plt.text(-1.2, 1, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
+    file_name = username + '_analysis.png'
+    plt.savefig(file_name, format='png')
     plt.show()
 
 
