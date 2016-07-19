@@ -1,5 +1,5 @@
-import json
 from Instagram_Spider import *
+
 
 def store_dictionary(dict_name, dict_data):
     file = open(dict_name, 'w')
@@ -12,6 +12,7 @@ def load_dictionary(dict_name):
     dict_data = json.load(file)
     file.close()
     return dict_data
+
 
 def delete_word(dictionary):
     category = input('category:')
@@ -41,6 +42,10 @@ def add_word(dictionary):
 
 def main():
     dictionary = load_dictionary('Instagram_tag_dictionary.json')
+    total_num = 0
+    for category in dictionary:
+        total_num += len(dictionary[category])
+    print('The total number of words in current dictionary is: ' + str(total_num))
     while True:
         print('what do you want to do?(a: add word to the dictionary; d: delete word from the dictionary; '
               's:display the dictionary q:quit!)')
