@@ -200,7 +200,7 @@ def analyze_words(my_words, dictionary):
         for category in local_similarity_dictionary:
             if local_similarity_dictionary[category] > local_similarity_dictionary[final_category]:
                 final_category = category
-        if local_similarity_dictionary[final_category] > 3:
+        if local_similarity_dictionary[final_category] > 2.5:
             if local_similarity_dictionary[final_category] > 4:
                 if word_pair[0] not in dictionary[final_category]:
                     dictionary[final_category].append(word_pair[0])
@@ -232,6 +232,7 @@ sample_media_code = 'BGUNUTcMhvo'
 sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
 sample_public_user_name = 'silisunglasses'
+test_username = 'zeyneponsuz'
 my_dictionary = load_dictionary('Instagram_tag_dictionary.json')
 
 wordlist = combine_dictionary(wordlist, my_dictionary)
@@ -239,18 +240,19 @@ spider = InstagramSpider()
 # username = 'hongming0611'
 # password = input('hi, ' + username + 'please give me your password: ')
 # spider.login(username, password)
-data = get_data(spider, sample_public_user_name)
+data = get_data(spider, test_username)
 print('data got...')
-print('analyzing tags from user: ' + sample_public_user_name)
+print('analyzing tags from user: ' + test_username)
 words_from_tags, unsolved_data = tag2word(tag_list=data)
 rate1 = successful_rate(successful_list=words_from_tags, fail_list=unsolved_data)
 print("successful rate of extracting from hashtag is：%.2f%%" % (rate1 * 100))
-print('analyzing words from tags from user: ' + sample_public_user_name)
+print('analyzing words from tags from user: ' + test_username)
 result, rate, distribute_result, percentage_result = analyze_words(my_words=words_from_tags, dictionary=my_dictionary)
 print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
 print('similarity result: ')
 print(result)
+print(distribute_result['unknown'])
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
-display_result(data_dict=percentage_result, confidence=recognize_rate, username=sample_public_user_name)
+display_result(data_dict=percentage_result, confidence=recognize_rate, username=test_username)
 print('end')

@@ -3,9 +3,6 @@ import time
 import csv
 
 
-
-
-
 def strange_character_filter(input_string):
     if input_string is None:
         return ' '
@@ -18,6 +15,7 @@ def strange_character_filter(input_string):
             except UnicodeEncodeError:
                 output_string = output_string
     return output_string
+
 
 def record_info(tag_dict, spider, file_name):
     my_file = open(file_name, 'a', newline='')

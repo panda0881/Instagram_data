@@ -55,9 +55,12 @@ def main():
         elif command == 'd':
             dictionary = delete_word(dictionary)
         elif command == 's':
+            total_num = 0
             for category in dictionary:
                 print(category + ':')
                 print(dictionary[category])
+                total_num += len(dictionary[category])
+                print('The total number of words in current dictionary is: ' + str(total_num))
         elif command == 'q':
             store_dictionary('Instagram_tag_dictionary.json', dictionary)
             break

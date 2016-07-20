@@ -79,7 +79,10 @@ class InstagramSpider:
         if max_id:
             url += '?&max_id=' + max_id
         resp = requests.get(url)
-        media = json.loads(resp.text)
+        try:
+            media = json.loads(resp.text)
+        except:
+            print('there is something wrong with this user')
         self.numPosts += len(media['items'])
         print('collecting data from ' + str(self.numPosts) + 'medias')
         for item in media['items']:
@@ -194,7 +197,6 @@ class InstagramSpider:
         data = self.get_user_data(name)
         user_id = data['id']
         self.collect_followers(cookie, name, user_id)
-        self.collect_followers(cookie, name, user_id)
         return self.follower_list, self.follow_list
 
     def download_user_media(self, name, max_id=None):
@@ -297,6 +299,8 @@ class InstagramSpider:
         print('has collected: ' + str(len(self.full_media_list)) + 'medias')
         if result['media']['page_info']['has_next_page']:
             self.collect_media_list(tag_name, result['media']['page_info']['end_cursor'])
+        else:
+            return
 
     def get_media_from_tag(self, tag_name):
         top_posts_media_list = list()
@@ -308,14 +312,15 @@ class InstagramSpider:
             self.full_media_list.append(media['code'])
         if data['media']['page_info']['has_next_page']:
             self.collect_media_list(tag_name, data['media']['page_info']['end_cursor'])
+            print('finish collecting media')
         return top_posts_media_list, self.full_media_list
 
     def get_user_from_media(self, media_code):
         data = self.get_media_data(media_code)
         user_list = list()
         user_list.append(data['owner']['username'])
-        for comment in data['comments']['nodes']:
-            user_list.append(comment['user']['username'])
+        # for comment in data['comments']['nodes']:
+        #     user_list.append(comment['user']['username'])
         # for like in data['likes']['nodes']:
         #     user_list.append(like['user']['username'])
         user_list = list(set(user_list))
@@ -332,15 +337,22 @@ class InstagramSpider:
         return media_list
 
     def get_user_from_tag(self, tag_name):
-        medias = self.get_media_from_tag(tag_name)
+        top_medias, medias = self.get_media_from_tag(tag_name)
         user_list = list()
+        current_number = 0
         for media in medias:
+            current_number += 1
+            print('getting information for: ' + media + '(' + str(current_number) + '/' + str(len(medias)) + ')')
             tmp = self.get_user_from_media(media)
             for user in tmp:
                 user_list.append(user)
         user_list = list(set(user_list))
         final_user_list = list()
+        print('total potential user: ' + str(len(user_list)))
+        current_number = 0
         for user in user_list:
+            current_number += 1
+            print('Verifying ' + user + '(' + str(current_number) + '/' + str(len(user_list)) + ')')
             data = self.get_user_data(user)
             if data['is_private'] == False and data['followed_by']['count'] > 500:
                 final_user_list.append(user)
