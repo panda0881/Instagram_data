@@ -7,14 +7,14 @@ from matplotlib import pyplot as plt
 
 
 def store_tag_data(name, tag_data):
-    file_name = name + '_tag_data.json'
+    file_name = 'user_tag_data/' +name + '_tag_data.json'
     file = open(file_name, 'w')
     json.dump(tag_data, file)
     file.close()
 
 
 def load_tag_data(name):
-    file_name = name + '_tag_data.json'
+    file_name = 'user_tag_data/' +name + '_tag_data.json'
     file = open(file_name, 'r')
     tag_data = json.load(file)
     file.close()
@@ -22,7 +22,7 @@ def load_tag_data(name):
 
 
 def get_data(my_spider, name):
-    file_name = name + '_tag_data.json'
+    file_name = 'user_tag_data/' +name + '_tag_data.json'
     if os.path.isfile(file_name):
         tag_data = load_tag_data(name)
     else:
@@ -97,7 +97,7 @@ def display_result(data_dict, confidence, username):
     plt.axis('equal')
     plt.text(-1.2, 1.1, 'username: ' + username, fontsize=15)
     plt.text(-1.2, 1, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
-    file_name = username + '_analysis.png'
+    file_name = 'user_analysis_result/' + username + '_analysis.png'
     plt.savefig(file_name, format='png')
     plt.show()
 
@@ -170,7 +170,6 @@ def analyze_words(my_words, dictionary):
                 total_number += word_pair[1]
                 distribution_dictionary[category].append(word_pair)
                 find_category = True
-                break
         if find_category:
             continue
         try:
@@ -232,7 +231,7 @@ sample_media_code = 'BGUNUTcMhvo'
 sample_user_name = 'yy_god'
 sample_private_user_name = 'sretiqa'
 sample_public_user_name = 'silisunglasses'
-test_username = 'zeyneponsuz'
+test_username = 'safacosarpinar'
 my_dictionary = load_dictionary('Instagram_tag_dictionary.json')
 
 wordlist = combine_dictionary(wordlist, my_dictionary)
