@@ -92,6 +92,7 @@ class InstagramSpider:
             self.get_user_full_media_data(name=name, max_id=max_id)
 
     def collect_followers(self, cookie, name, user_id, end_cursor=None):
+        print('Current follower list number: ' + str(len(self.follower_list)))
         referer = 'https://www.instagram.com/' + name + '/'
         headers = {
             'accept': '*/*',
@@ -135,6 +136,7 @@ class InstagramSpider:
             self.collect_followers(cookie, name, user_id, next_end_cursor)
 
     def collect_follows(self, cookie, name, user_id, end_cursor=None):
+        print('Current follow list number: ' + str(len(self.follow_list)))
         referer = 'https://www.instagram.com/' + name + '/'
         headers = {
             'accept': '*/*',
@@ -197,6 +199,7 @@ class InstagramSpider:
         data = self.get_user_data(name)
         user_id = data['id']
         self.collect_followers(cookie, name, user_id)
+        self.collect_follows(cookie, name, user_id)
         return self.follower_list, self.follow_list
 
     def download_user_media(self, name, max_id=None):
