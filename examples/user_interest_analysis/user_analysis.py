@@ -4,6 +4,7 @@ from nltk.corpus import words
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic
 from matplotlib import pyplot as plt
+import math
 
 
 def store_tag_data(name, tag_data):
@@ -26,7 +27,7 @@ def get_data(my_spider, name):
     if os.path.isfile(file_name):
         tag_data = load_tag_data(name)
     else:
-        tag_data = my_spider.get_all_tag_from_user(name)
+        tag_data = my_spider.get_tag_from_user(name)
         store_tag_data(name, tag_data)
     return tag_data
 
@@ -38,6 +39,33 @@ def clean_up_string(old_string):
         if char in characters:
             new_string += char
     return new_string.lower()
+
+
+def get_user_influence_power(user):
+    print('start to analyze the social influence power of this user...')
+    data = spider.get_user_data(user)
+    follower_number = data['followed_by']['count']
+    media_list = spider.get_media_from_user(user)
+    likes_number = 0
+    current_number = 0
+    tags_number = 0
+    for media in media_list:
+        current_number += 1
+        print('analyzing user media: ' + media + '(' + str(current_number) + '/20)')
+        media_data = spider.get_media_data(media)
+        likes_number += media_data['likes']['count']
+        tags_list = spider.get_tag_from_media(media)
+        tags_number += len(tags_list)
+    likes_number /= len(media_list)
+    tags_number /= len(media_list)
+    quality = follower_number*0.000525 + likes_number*0.989 - tags_number*6.32
+    if quality < 0:
+        quality = 0
+    if quality > 10000:
+        quality = 10000
+    if follower_number > 1000000:
+        follower_number = 1000000
+    return math.log(quality*follower_number, 10)
 
 
 def successful_rate(successful_list, fail_list):
@@ -95,8 +123,10 @@ def display_result(data_dict, confidence, username):
     for t in p_text:
         t.set_size = 4
     plt.axis('equal')
-    plt.text(-1.2, 1.1, 'username: ' + username, fontsize=15)
-    plt.text(-1.2, 1, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
+    user_influence = round(get_user_influence_power(username), 2)
+    plt.text(-1.2, 1.2, 'username: ' + username, fontsize=15)
+    plt.text(-1.2, 1.1, 'confidence: %.2f%%' % (confidence * 100), fontsize=15)
+    plt.text(-1.2, 1, 'social influence: ' + str(user_influence), fontsize=15)
     file_name = 'user_analysis_result/' + username + '_analysis.png'
     plt.savefig(file_name, format='png')
     plt.show()
@@ -115,15 +145,7 @@ def combine_dictionary(official_word_list, dictionary):
 def tag2word(tag_list):
     result_list = list()
     unsolved_list = list()
-    one_tenth = int(len(tag_list)/10)
-    current_number = 0
-    progress = 0
     for tag_pair in tag_list:
-        current_number += 1
-        if current_number > one_tenth:
-            progress += 1
-            current_number = 0
-            print('finish ' + str(progress) + '0%')
         tag = clean_up_string(tag_pair[0]).lower()
         tag = clean_up_string(tag)
         pos = len(tag)
@@ -236,9 +258,6 @@ my_dictionary = load_dictionary('Instagram_tag_dictionary.json')
 
 wordlist = combine_dictionary(wordlist, my_dictionary)
 spider = InstagramSpider()
-# username = 'hongming0611'
-# password = input('hi, ' + username + 'please give me your password: ')
-# spider.login(username, password)
 data = get_data(spider, test_username)
 print('data got...')
 print('analyzing tags from user: ' + test_username)
@@ -250,7 +269,6 @@ result, rate, distribute_result, percentage_result = analyze_words(my_words=word
 print("successful rate of fitting words into dictionary is：%.2f%%" % (rate * 100))
 print('similarity result: ')
 print(result)
-print(distribute_result['unknown'])
 recognize_rate = 1-percentage_result['unknown']
 print("our machine's current recognize rate is：%.2f%%" % (recognize_rate * 100))
 display_result(data_dict=percentage_result, confidence=recognize_rate, username=test_username)
