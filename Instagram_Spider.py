@@ -83,6 +83,7 @@ class InstagramSpider:
             media = json.loads(resp.text)
         except:
             print('there is something wrong with this user')
+            return
         self.numPosts += len(media['items'])
         print('collecting data from ' + str(self.numPosts) + 'medias')
         for item in media['items']:
@@ -404,15 +405,30 @@ class InstagramSpider:
 
     def get_comment_from_user(self, name):
         media_list = self.get_media_from_user(name)
-        total_comment_list = list()
+        full_comment_list = list()
         print('total number of medias from this user: ' + str(len(media_list)))
         for media in media_list:
             print('getting comments from media: ' + media)
             tmp = self.get_comment_from_media(media)
             for comment in tmp:
-                total_comment_list.append(comment)
-        return total_comment_list
+                full_comment_list.append(comment)
+        return full_comment_list
 
-    # def get_all_comment_from_user(self, name):
-    #     self.full_media_list = list()
+    def get_all_comment_from_user(self, name):
+        self.full_media_list = list()
+        self.numPosts = 0
+        self.get_user_full_media_data(name)
+        full_comment_list = list()
+        print('getting data for user: ' + name)
+        print('total number of medias from this user: ' + str(len(self.full_media_list)))
+        total_media_number = len(self.full_media_list)
+        current_media_number = 0
+        for media in self.full_media_list:
+            current_media_number += 1
+            print('getting tag from media: ' + media + '(' + str(current_media_number) +
+                  '/' + str(total_media_number) + ')')
+            tmp = self.get_comment_from_media(media)
+            for comment in tmp:
+                full_comment_list.append(comment)
+        return full_comment_list
 
