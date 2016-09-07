@@ -231,6 +231,16 @@ class InstagramSpider:
         file_time = int(item['created_time'])
         os.utime(file_path, (file_time, file_time))
 
+    def get_comment_from_media(self, media_code):
+        data = self.get_media_data(media_code)
+        username = data['owner']['username']
+        comment_list = list()
+        for comment in data['comments']['nodes']:
+            if comment['user']['username'] == username:
+                comment_list.append(comment['text'])
+                print(comment['text'])
+        return comment_list
+
     def get_tag_from_media(self, media_code):
         data = self.get_media_data(media_code)
         tag_list = list()
@@ -252,7 +262,7 @@ class InstagramSpider:
                     l = [pos1, pos2, pos3, 0]
                     l.sort()
                     if l.index(0) < 3:
-                        pos = l[l.index(0)+1]
+                        pos = l[l.index(0) + 1]
                         tag = string[:pos]
                         tag_list.append(tag)
                         sentence = string[pos:]
@@ -391,3 +401,18 @@ class InstagramSpider:
                 tag_list.append(tag)
         tag_list = Counter(tag_list).most_common()
         return tag_list
+
+    def get_comment_from_user(self, name):
+        media_list = self.get_media_from_user(name)
+        total_comment_list = list()
+        print('total number of medias from this user: ' + str(len(media_list)))
+        for media in media_list:
+            print('getting comments from media: ' + media)
+            tmp = self.get_comment_from_media(media)
+            for comment in tmp:
+                total_comment_list.append(comment)
+        return total_comment_list
+
+    # def get_all_comment_from_user(self, name):
+    #     self.full_media_list = list()
+
