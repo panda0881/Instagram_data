@@ -313,6 +313,7 @@ class InstagramSpider:
                 self.full_media_list.append(media['code'])
             print('has collected: ' + str(len(self.full_media_list)) + 'medias')
         except KeyError:
+            print('There is something wrong with this hashtag...')
             return
         if result['media']['page_info']['has_next_page']:
             self.collect_media_list(tag_name, result['media']['page_info']['end_cursor'])
