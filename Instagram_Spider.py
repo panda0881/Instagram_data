@@ -4,6 +4,7 @@ import requests
 import re
 import os
 from collections import Counter
+import time
 
 
 class InstagramSpider:
@@ -277,6 +278,7 @@ class InstagramSpider:
         return tag_list
 
     def collect_media_list(self, tag_name, end_cursor):
+        time.sleep(0.5)
         cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; sessionid=IGSC94' \
                  '18aaf857177c99ed52a2e6c37e6a251074f891282a715fdd7c3aca86705f08%3Aw2geyFDrzzVKRERueIyLgESNUXoOcAqE%' \
                  '3A%7B%22_token_ver%22%3A2%2C%22_auth_user_id%22%3A3164739822%2C%22_token%22%3A%223164739822%3AfEsx' \
