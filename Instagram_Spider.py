@@ -278,6 +278,7 @@ class InstagramSpider:
         return tag_list
 
     def collect_media_list(self, tag_name, end_cursor):
+        # You may need to change the time of delay based on your own network situation and need.
         time.sleep(0.5)
         cookie = 'mid=VyoH4QAEAAHSM1L-WuJx0TEnosOT; fbm_124024574287414=base_domain=.instagram.com; sessionid=IGSC94' \
                  '18aaf857177c99ed52a2e6c37e6a251074f891282a715fdd7c3aca86705f08%3Aw2geyFDrzzVKRERueIyLgESNUXoOcAqE%' \
