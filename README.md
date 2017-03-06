@@ -107,7 +107,7 @@ Remarks:
 1. Great thanks to rarcega, whose project (https://github.com/rarcega/instagram-scraper) gave me the first hint of collecting data from Instagram without API.
 2. You are free to use this spider on your own responsibility.
 3. Your help is more than welcomed
-4. If you want to see some examples using this spider, you can check the following project: Instagram_spider_application(https://github.com/panda0881/Instagram_spider_application)
+4. If you want to see some examples using this spider, you can check the following project: Instagram_spider_application (https://github.com/panda0881/Instagram_spider_application)
 
 Licence:
 --------
