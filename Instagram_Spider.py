@@ -48,7 +48,7 @@ class InstagramSpider:
             'user-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/51.0.2704.103 Safari/537.36',
             'x-csrftoken': '3r8AwU3xWRhQMFIMz5b6ICn6Pfa4A5ZV',
-            'x-instagram-ajax': 1,
+            'x-instagram-ajax': '1',
             'x-requested-with': 'XMLHttpRequest'
         }
         data = {'username': username, 'password': password}
